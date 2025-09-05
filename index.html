@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasa del Dólar BCV</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .currency-btn.active {
+            background-color: #10B981; /* green-500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transform: scale(1.05);
+        }
+
+        #message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            background-color: #1c2630;
+            color: #c9d1d9;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <main class="w-full max-w-sm mx-auto p-6 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center">
+        <h1 class="text-4xl font-bold text-green-400 mb-2">Tasa de Cambio</h1>
+        <p class="text-gray-400 mb-6">Información actualizada al instante.</p>
+        
+        <!-- Panel de Selección de Tasa -->
+        <div class="flex justify-center space-x-2 mb-6">
+            <button id="usd-btn" class="currency-btn bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors">
+                Tasa USD
+            </button>
+            <button id="eur-btn" class="currency-btn bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors">
+                Tasa Euro
+            </button>
+        </div>
+
+        <div id="loading" class="text-gray-500 text-lg mb-4">Cargando tasa...</div>
+        
+        <div id="rate-display" class="hidden">
+            <div class="bg-gray-700 p-4 rounded-lg mb-4">
+                <p class="text-xl text-gray-300">Valor actual:</p>
+                <p class="text-5xl font-bold text-green-400 mt-1" id="currency-rate">Cargando...</p>
+            </div>
+            
+            <p class="text-sm text-gray-500 mb-4">Última actualización: <span id="last-updated">Cargando...</span></p>
+        </div>
+
+        <!-- Botones de Compartir y Actualizar -->
+        <div class="flex justify-center space-x-4 mb-4">
+            <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                Actualizar
+            </button>
+            <button id="share-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                Compartir
+            </button>
+        </div>
+        
+        <!-- Contenedor para anuncios (ejemplo) -->
+        <div class="bg-gray-700 p-4 rounded-lg mt-6">
+            <p class="text-gray-400">Espacio para anuncios</p>
+            <div class="text-xs text-gray-500 mt-2">
+                Aquí se insertará el código de anuncios de AdMob.
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Mensaje de confirmación de copia -->
+    <div id="message-box" class="hidden">
+        ¡Tasa copiada al portapapeles!
+    </div>
+
+    <script>
+        let rates = {};
+        let currentCurrency = 'USD';
+
+        // Función para mostrar un mensaje temporal
+        function showMessage(message) {
+            const msgBox = document.getElementById('message-box');
+            msgBox.textContent = message;
+            msgBox.style.display = 'block';
+            setTimeout(() => {
+                msgBox.style.opacity = 1;
+            }, 10);
+            setTimeout(() => {
+                msgBox.style.opacity = 0;
+            }, 2500);
+            setTimeout(() => {
+                msgBox.style.display = 'none';
+            }, 3000);
+        }
+
+        // Función para obtener las tasas desde la API oficial del BCV
+        async function fetchRates() {
+            try {
+                // Se utiliza un servicio de proxy para evitar errores de seguridad.
+                const usdApiUrl = 'https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv';
+                const eurApiUrl = 'https://pydolarvenezuela-api.vercel.app/api/v1/euro/bcv';
+
+                const proxyUrl = 'https://api.allorigins.win/get?url=';
+                
+                const dollarResponse = await fetch(proxyUrl + encodeURIComponent(usdApiUrl));
+                const dollarData = await dollarResponse.json();
+                const dollarJson = JSON.parse(dollarData.contents);
+                const usdToVes = dollarJson.price;
+                
+                const eurResponse = await fetch(proxyUrl + encodeURIComponent(eurApiUrl));
+                const eurData = await eurResponse.json();
+                const eurJson = JSON.parse(eurData.contents);
+                const eurToVes = eurJson.price;
+                
+                rates = {
+                    'USD': { value: usdToVes, symbol: 'Bs' },
+                    'EUR': { value: eurToVes, symbol: 'Bs' }
+                };
+
+                updateDisplay(currentCurrency);
+
+            } catch (error) {
+                console.error("Error al obtener la tasa:", error);
+                document.getElementById('loading').textContent = "Error al cargar la tasa. Intente más tarde.";
+                document.getElementById('loading').classList.remove('hidden');
+                document.getElementById('rate-display').classList.add('hidden');
+            }
+        }
+        
+        // Función para actualizar la interfaz
+        function updateDisplay(currency) {
+            const rateInfo = rates[currency];
+            if (rateInfo) {
+                document.getElementById('currency-rate').textContent = `${rateInfo.symbol} ${rateInfo.value}`;
+                document.getElementById('last-updated').textContent = new Date().toLocaleString('es-VE');
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('rate-display').classList.remove('hidden');
+
+                // Actualizar el estado de los botones
+                document.querySelectorAll('.currency-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.getElementById(`${currency.toLowerCase()}-btn`).classList.add('active');
+                currentCurrency = currency;
+            }
+        }
+
+        // Event listeners para los botones de selección de moneda
+        document.getElementById('usd-btn').addEventListener('click', () => updateDisplay('USD'));
+        document.getElementById('eur-btn').addEventListener('click', () => updateDisplay('EUR'));
+        
+        // Función para compartir
+        document.getElementById('share-btn').addEventListener('click', () => {
+            const rate = document.getElementById('currency-rate').textContent;
+            const currencyLabel = currentCurrency === 'USD' ? 'Dólar' : 'Euro';
+            const textToShare = `La tasa del ${currencyLabel} es: ${rate}. Mantente actualizado con mi app.`;
+            
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToShare;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            showMessage('Tasa copiada al portapapeles. ¡Comparte con tus amigos!');
+        });
+        
+        // Función para actualizar la tasa
+        document.getElementById('refresh-btn').addEventListener('click', () => {
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('rate-display').classList.add('hidden');
+            fetchRates();
+        });
+
+        // Cargar las tasas al cargar la página
+        window.onload = () => {
+            fetchRates();
+        };
+        
+    </script>
+</body>
+</html>
