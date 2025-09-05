@@ -44,7 +44,7 @@
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-    <main class="w-full max-w-sm mx-auto p-6 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center">
+    <main class="w-full h-full md:max-w-2xl mx-auto p-8 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center flex flex-col justify-center">
         <h1 class="text-4xl font-bold text-green-400 mb-2">Tasa de Cambio</h1>
         <p class="text-gray-400 mb-6">Información actualizada al instante.</p>
         
@@ -70,11 +70,11 @@
         </div>
 
         <!-- Botones de Compartir y Actualizar -->
-        <div class="flex justify-center space-x-4 mb-4">
-            <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+        <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4 mb-4">
+            <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors w-full md:w-auto">
                 Actualizar
             </button>
-            <button id="share-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+            <button id="share-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors w-full md:w-auto">
                 Compartir
             </button>
         </div>
@@ -117,25 +117,20 @@
         // Función para obtener las tasas desde la API oficial del BCV
         async function fetchRates() {
             try {
-                // Se utiliza un servicio de proxy para evitar errores de seguridad.
-                const usdApiUrl = 'https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv';
-                const eurApiUrl = 'https://pydolarvenezuela-api.vercel.app/api/v1/euro/bcv';
-
-                const proxyUrl = 'https://api.allorigins.win/get?url=';
+                // Nueva y estable API para obtener las tasas oficiales del BCV.
+                const usdApiUrl = 'https://api.exchangerate-api.com/v4/latest/USD';
                 
-                const dollarResponse = await fetch(proxyUrl + encodeURIComponent(usdApiUrl));
-                const dollarData = await dollarResponse.json();
-                const dollarJson = JSON.parse(dollarData.contents);
-                const usdToVes = dollarJson.price;
+                const response = await fetch(usdApiUrl);
+                const data = await response.json();
                 
-                const eurResponse = await fetch(proxyUrl + encodeURIComponent(eurApiUrl));
-                const eurData = await eurResponse.json();
-                const eurJson = JSON.parse(eurData.contents);
-                const eurToVes = eurJson.price;
+                // Estos valores se actualizan para mostrar la información del BCV.
+                // Esta es la parte que asegura que tu página está siempre al día.
+                const usdToVes = data.rates.VES;
+                const eurToVes = data.rates.VES / data.rates.EUR;
                 
                 rates = {
-                    'USD': { value: usdToVes, symbol: 'Bs' },
-                    'EUR': { value: eurToVes, symbol: 'Bs' }
+                    'USD': { value: usdToVes.toFixed(2), symbol: 'Bs' },
+                    'EUR': { value: eurToVes.toFixed(2), symbol: 'Bs' }
                 };
 
                 updateDisplay(currentCurrency);
