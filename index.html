@@ -122,16 +122,15 @@
         // Función para obtener las tasas desde la API oficial del BCV
         async function fetchRates() {
             try {
-                // Nueva y estable API para obtener las tasas oficiales del BCV.
-                const usdApiUrl = 'https://api.exchangerate-api.com/v4/latest/USD';
+                // API confiable que proporciona la tasa oficial del BCV.
+                const bcvApiUrl = 'https://s3.amazonaws.com/dolartoday/data.json';
                 
-                const response = await fetch(usdApiUrl);
+                const response = await fetch(bcvApiUrl);
                 const data = await response.json();
                 
-                // Estos valores se actualizan para mostrar la información del BCV.
-                // Esta es la parte que asegura que tu página está siempre al día.
-                const usdToVes = data.rates.VES;
-                const eurToVes = data.rates.VES / data.rates.EUR;
+                // Extrae el valor exacto del dólar y el euro.
+                const usdToVes = parseFloat(data.USD.sicad2);
+                const eurToVes = parseFloat(data.EUR.sicad2);
                 
                 rates = {
                     'USD': { value: usdToVes.toFixed(2), symbol: 'Bs' },
