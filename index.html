@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tasa del Dólar BCV</title>
+    <title>Hoy Dolarizado</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Start.io SDK -->
-    <script type="text/javascript">var startapp_sdk_init = { "appId": "172321198" };</script>
+    <script type="text/javascript">var startapp_sdk_init = { "appId": "208652124" };</script>
     <script type="text/javascript" src="//d.startapp.com/startapp.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -62,14 +62,13 @@
             width: 100%;
             display: flex;
             justify-content: center;
-            margin-top: 1.5rem;
         }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <main class="w-full h-full md:max-w-2xl mx-auto p-8 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center flex flex-col justify-center">
-        <h1 class="text-4xl font-bold text-green-400 mb-2">Tasa de Cambio</h1>
+        <h1 class="text-4xl font-bold text-green-400 mb-2">Hoy Dolarizado</h1>
         <p class="text-gray-400 mb-6">Valores de un API de cambio global.</p>
         
         <!-- Panel de Selección de Tasa -->
@@ -125,24 +124,11 @@
                 <div class="spinner mx-auto mb-2"></div>
                 <span>Convirtiendo...</span>
             </div>
-        </div>
 
-        <!-- Botón para ver los datos crudos -->
-        <div class="mt-4">
-            <button id="debug-btn" class="bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors">
-                Ver Datos Crudos
-            </button>
+            <!-- Contenedor para el banner de anuncios -->
+            <div id="ad-container" class="mt-6 p-2 bg-gray-700 rounded-lg"></div>
         </div>
-        <pre id="raw-data" class="mt-2 p-4 bg-gray-900 rounded-lg text-xs text-left whitespace-pre-wrap break-words hidden"></pre>
         
-        <!-- Contenedor para el banner de anuncios -->
-        <div id="ad-container"></div>
-
-        <!-- Hecho por... -->
-        <div class="mt-8 text-center text-sm text-gray-500">
-            Hecho por Oswaldo Marquez H
-        </div>
-
     </main>
 
     <!-- Mensaje de confirmación de copia -->
@@ -153,7 +139,6 @@
     <script>
         let rates = {};
         let currentCurrency = 'USD';
-        let rawData = {};
         const CACHE_KEY = 'currencyRates';
         const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
 
@@ -197,7 +182,6 @@
         async function fetchRates() {
             document.getElementById('loading').classList.remove('hidden');
             document.getElementById('rate-display').classList.add('hidden');
-            document.getElementById('raw-data').classList.add('hidden');
             document.getElementById('conversion-result').classList.add('hidden');
             
             const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
@@ -206,7 +190,6 @@
             if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY)) {
                 // Usar datos del caché si no han expirado
                 rates = cachedData.rates;
-                rawData = cachedData.rawData;
                 updateDisplay(currentCurrency);
                 console.log("Usando datos de caché.");
                 return;
@@ -220,8 +203,6 @@
                 }
                 const result = await response.json();
                 
-                rawData = { response: result };
-                
                 if (result.rates && result.rates.VES && result.rates.EUR) {
                     rates = {
                         'USD': { value: result.rates.VES.toFixed(2), symbol: 'Bs', conversion: result.rates.VES },
@@ -231,7 +212,6 @@
                     // Guardar en caché
                     localStorage.setItem(CACHE_KEY, JSON.stringify({
                         rates: rates,
-                        rawData: rawData,
                         timestamp: now
                     }));
                     
@@ -315,18 +295,7 @@
 
         // Event listener para el nuevo botón de conversión
         document.getElementById('convert-btn').addEventListener('click', convertAndExplain);
-
-        // Event listener para el botón de depuración
-        document.getElementById('debug-btn').addEventListener('click', () => {
-            const rawDataPre = document.getElementById('raw-data');
-            if (rawDataPre.classList.contains('hidden')) {
-                rawDataPre.textContent = JSON.stringify(rawData, null, 2);
-                rawDataPre.classList.remove('hidden');
-            } else {
-                rawDataPre.classList.add('hidden');
-            }
-        });
-
+        
         // Cargar las tasas y mostrar el banner al cargar la página
         window.onload = () => {
             fetchRates();
