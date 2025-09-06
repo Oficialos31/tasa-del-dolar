@@ -307,12 +307,13 @@
         }
 
         // Función para convertir y explicar usando la tasa ya cargada
-        function convertAndExplain() {
+        async function convertAndExplain() {
             const amountInput = document.getElementById('amount-input');
             const currencySelect = document.getElementById('currency-select');
             const conversionResultDiv = document.getElementById('conversion-result');
             const convertedValueDiv = document.getElementById('converted-value');
             const conversionExplanationDiv = document.getElementById('conversion-explanation');
+            const conversionLoading = document.getElementById('conversion-loading');
             
             const amount = parseFloat(amountInput.value);
             const currency = currencySelect.value;
@@ -327,17 +328,64 @@
                 return;
             }
 
-            let convertedValue;
-            if (currency === 'USD') {
-                convertedValue = (amount * rateInfo.conversion).toFixed(2);
-                conversionExplanationDiv.textContent = `Esta conversión se basa en la tasa de cambio del dólar a bolívares.`;
-            } else {
-                convertedValue = (amount * rateInfo.conversion).toFixed(2);
-                conversionExplanationDiv.textContent = `Esta conversión se basa en la tasa de cambio del euro a bolívares.`;
-            }
-            
-            conversionResultDiv.classList.remove('hidden');
+            // Realizar la conversión
+            let convertedValue = (amount * rateInfo.conversion).toFixed(2);
             convertedValueDiv.textContent = `${rateInfo.symbol} ${convertedValue}`;
+
+            // Mostrar el resultado de la conversión
+            conversionResultDiv.classList.remove('hidden');
+            conversionExplanationDiv.textContent = '';
+            conversionLoading.classList.remove('hidden');
+
+            try {
+                // Llamar a la API de Gemini para la explicación
+                const userQuery = `Dada la tasa de cambio de ${rateInfo.value} bolívares por ${currency}, y el monto de ${convertedValue} bolívares, ¿qué se podría comprar con esa cantidad? Proporciona una respuesta en una frase corta y sencilla, usando ejemplos de productos o servicios comunes en Venezuela.`;
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                };
+
+                let response;
+                let retries = 0;
+                const maxRetries = 3;
+                while (retries < maxRetries) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.status !== 429) {
+                            break;
+                        }
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+                        retries++;
+                    } catch (error) {
+                        console.error("Error al realizar la solicitud:", error);
+                        break;
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error(`Error en la solicitud a la API de Gemini: ${response?.status}`);
+                }
+
+                const result = await response.json();
+                const explanation = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (explanation) {
+                    conversionExplanationDiv.textContent = explanation;
+                } else {
+                    conversionExplanationDiv.textContent = 'No se pudo generar una explicación en este momento.';
+                }
+            } catch (error) {
+                console.error("Error en la API de Gemini:", error);
+                conversionExplanationDiv.textContent = 'Ocurrió un error al generar la explicación.';
+            } finally {
+                conversionLoading.classList.add('hidden');
+            }
         }
 
         // Función para mostrar la hora de la última conexión en línea
