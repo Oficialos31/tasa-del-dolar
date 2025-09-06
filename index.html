@@ -93,7 +93,19 @@
         <div id="rate-display" class="hidden">
             <div class="bg-gray-700 p-4 rounded-lg mb-4">
                 <p class="text-xl text-gray-300">Valor actual:</p>
-                <p class="text-5xl font-bold text-green-400 mt-1" id="currency-rate">Cargando...</p>
+                <div class="flex items-center justify-center">
+                    <p class="text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
+                    <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2A2 2 0 0114 5m-5 8h4m-4 4h4" />
+                        </svg>
+                    </button>
+                    <button id="share-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.476-.11-1.015-.312-1.664M8.684 13.342c-1.801 3.102-3.896 4.981-5.38 5.766A1.5 1.5 0 010 18.5a1.5 1.5 0 011.026-.142M8.684 13.342L12 19l4.316-5.658c.202-.404.312-.86.312-1.342 0-2.21-1.79-4-4-4s-4 1.79-4 4c0 .482.11.938.312 1.342zM12 19V6m0 0a2 2 0 100-4 2 2 0 000 4z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
             
             <p class="text-sm text-gray-500 mb-4">Última actualización: <span id="last-updated">Cargando...</span></p>
@@ -179,6 +191,42 @@
                         startapp.interstitial.show();
                     }
                 });
+            }
+        }
+        
+        // Función para copiar la tasa al portapapeles
+        function copyToClipboard() {
+            const rateElement = document.getElementById('currency-rate');
+            const rateText = rateElement.textContent.trim();
+            
+            // Usar una técnica de copiado compatible con iFrames
+            const tempInput = document.createElement('textarea');
+            tempInput.value = rateText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showMessage("¡Tasa copiada al portapapeles!");
+        }
+
+        // Función para compartir la tasa usando la API nativa de compartir
+        function shareRate() {
+            const rateText = document.getElementById('currency-rate').textContent.trim();
+            const shareMessage = `Valor actual de la Tasa ${currentCurrency} (${rateText}) por Hoy Dolarizado`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Hoy Dolarizado',
+                    text: shareMessage,
+                    url: window.location.href
+                }).then(() => {
+                    console.log('Contenido compartido con éxito.');
+                }).catch((error) => {
+                    console.error('Error al compartir:', error);
+                });
+            } else {
+                showMessage("La función de compartir no está disponible en este navegador. Puedes copiar el valor y compartirlo.");
             }
         }
 
@@ -302,6 +350,12 @@
 
         // Event listener para el nuevo botón de conversión
         document.getElementById('convert-btn').addEventListener('click', convertAndExplain);
+
+        // Event listener para el botón de copiar
+        document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
+
+        // Event listener para el botón de compartir
+        document.getElementById('share-btn').addEventListener('click', shareRate);
         
         // Cargar las tasas y mostrar el banner al cargar la página
         window.onload = () => {
