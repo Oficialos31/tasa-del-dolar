@@ -98,7 +98,8 @@
                 </div>
             </div>
             
-            <p class="text-sm text-gray-500 mb-4">Última actualización: <span id="last-updated">Cargando...</span></p>
+            <p class="text-sm text-gray-500 mb-2">Última actualización: <span id="last-updated">Cargando...</span></p>
+            <p class="text-sm text-gray-500 mb-4">Última conexión en línea: <span id="last-online-time">Cargando...</span></p>
         </div>
 
         <!-- Botones de Compartir y Actualizar -->
@@ -339,6 +340,12 @@
             convertedValueDiv.textContent = `${rateInfo.symbol} ${convertedValue}`;
         }
 
+        // Función para mostrar la hora de la última conexión en línea
+        function updateOnlineStatus() {
+            const now = new Date();
+            document.getElementById('last-online-time').textContent = now.toLocaleString('es-VE');
+        }
+
         // Event listeners para los botones de selección de moneda
         document.getElementById('usd-btn').addEventListener('click', () => updateDisplay('USD'));
         document.getElementById('eur-btn').addEventListener('click', () => updateDisplay('EUR'));
@@ -359,6 +366,7 @@
         window.onload = () => {
             fetchRates();
             showBannerAd();
+            updateOnlineStatus(); // Llamar a la función para actualizar el estado de conexión
         };
         
     </script>
