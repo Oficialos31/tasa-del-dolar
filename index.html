@@ -24,7 +24,6 @@
 
         // Función para obtener y establecer las tasas de cambio en Firestore
         async function fetchAndSetRates(dbInstance, appId) {
-            console.log("Intentando obtener y establecer nuevas tasas...");
             try {
                 const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
                 if (!response.ok) {
@@ -43,19 +42,16 @@
                         rates: newRates,
                         timestamp: Date.now()
                     });
-                    console.log("Tasas establecidas en Firestore con éxito.");
                 } else {
                     throw new Error('Datos de API no válidos.');
                 }
             } catch (error) {
-                console.error("Error al cargar la API:", error);
                 showMessage("Error de conexión. No se pudo obtener la tasa en línea.");
             }
         }
 
         // Función principal para iniciar la app, solo se llama después de la autenticación
         async function startApp(dbInstance, appId) {
-            console.log("Iniciando la aplicación con Firestore...");
             const rateDocRef = doc(dbInstance, `artifacts/${appId}/public/data/currency_rates`, 'current');
             
             try {
@@ -63,30 +59,24 @@
                 const CACHE_EXPIRY = 5 * 60 * 60 * 1000; 
 
                 if (docSnap.exists()) {
-                    console.log("Documento de tasas encontrado.");
                     const data = docSnap.data();
                     updateUIWithRates(data);
                     if (Date.now() - data.timestamp > CACHE_EXPIRY) {
-                        console.log("Tasas expiradas. Forzando actualización...");
                         await fetchAndSetRates(dbInstance, appId);
                     }
                 } else {
-                    console.log("Documento de tasas no encontrado. Obteniendo y estableciendo tasas por primera vez.");
                     await fetchAndSetRates(dbInstance, appId);
                 }
 
                 // Escuchar cambios en la base de datos
                 onSnapshot(rateDocRef, (doc) => {
                     if (doc.exists()) {
-                        console.log("Cambios detectados en la base de datos. Actualizando UI.");
                         updateUIWithRates(doc.data());
                     }
                 });
 
                 loadHistory();
-                console.log("Funcionalidad de historial cargada.");
             } catch (error) {
-                console.error("Error de permisos de Firestore:", error);
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('error-message').classList.remove('hidden');
                 document.getElementById('error-message').textContent = 'Error de permisos: No se pudo acceder a la base de datos. Por favor, recarga la página.';
@@ -99,7 +89,6 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 setLogLevel('Debug');
-                console.log("Firebase inicializado. Esperando estado de autenticación...");
                 
                 let userCredential;
                 if (initialAuthToken) {
@@ -109,13 +98,11 @@
                 }
                 
                 userId = userCredential.user.uid;
-                console.log("Usuario autenticado. UID:", userId);
                 
                 // Llama a la función de inicio de la app después de que la autenticación esté lista
                 startApp(db, appId);
                 
             } catch (error) {
-                console.error("Firebase initialization failed:", error);
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('error-message').classList.remove('hidden');
                 document.getElementById('error-message').textContent = 'Error de conexión. Por favor, revisa tu conexión a internet.';
@@ -333,7 +320,6 @@
                     throw new Error('Datos de API no válidos.');
                 }
             } catch (error) {
-                console.error("Error al cargar la API:", error);
                 showMessage("Error de conexión. No se pudo obtener la tasa en línea.");
             }
         }
