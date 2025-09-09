@@ -8,7 +8,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
@@ -84,28 +84,36 @@
         }
 
         window.firebase.init = async function() {
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('Debug');
-                
-                let userCredential;
-                if (initialAuthToken) {
-                    userCredential = await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    userCredential = await signInAnonymously(auth);
+            const MAX_RETRIES = 3;
+            let retries = 0;
+            let success = false;
+
+            while (retries < MAX_RETRIES && !success) {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+                    
+                    let userCredential;
+                    if (initialAuthToken) {
+                        userCredential = await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        userCredential = await signInAnonymously(auth);
+                    }
+                    
+                    userId = userCredential.user.uid;
+                    startApp(db, appId);
+                    success = true;
+                } catch (error) {
+                    retries++;
+                    if (retries >= MAX_RETRIES) {
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('error-message').classList.remove('hidden');
+                        document.getElementById('error-message').textContent = 'Error de conexión. Por favor, revisa tu conexión a internet o intenta de nuevo más tarde.';
+                    } else {
+                        await new Promise(res => setTimeout(res, 2000 * retries));
+                    }
                 }
-                
-                userId = userCredential.user.uid;
-                
-                // Llama a la función de inicio de la app después de que la autenticación esté lista
-                startApp(db, appId);
-                
-            } catch (error) {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('error-message').classList.remove('hidden');
-                document.getElementById('error-message').textContent = 'Error de conexión. Por favor, revisa tu conexión a internet.';
             }
         };
 
