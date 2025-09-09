@@ -105,6 +105,11 @@
         </div>
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
 
+        <!-- Botón de Actualizar con Cooldown -->
+        <button id="refresh-btn" class="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+            Actualizar
+        </button>
+
         <!-- Sección Conversor de Divisas -->
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
             <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
@@ -291,6 +296,17 @@
             showMessage("Historial de conversiones limpiado.");
         }
 
+        // Función para refrescar la página con un cooldown
+        function refreshPage() {
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = 'Actualizando...';
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000); // 5 segundos de cooldown
+        }
+
         // Event listeners para los botones de selección de moneda
         document.getElementById('usd-btn').addEventListener('click', () => updateDisplay('USD'));
         document.getElementById('eur-btn').addEventListener('click', () => updateDisplay('EUR'));
@@ -305,6 +321,9 @@
         // Event listener para el botón de limpiar historial
         document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
 
+        // Event listener para el nuevo botón de refrescar
+        document.getElementById('refresh-btn').addEventListener('click', refreshPage);
+
         // Lógica de inicio: carga las tasas manuales
         function init() {
             // Tasas actuales (puedes cambiarlas aquí)
@@ -318,7 +337,7 @@
             const futureRates = {
                 'USD': { value: 38.00, symbol: 'Bs', conversion: 38.00 },
                 'EUR': { value: 41.00, symbol: 'Bs', conversion: 41.00 },
-                'USDT': { value: 38.25, symbol: 'Bs', conversion: 38.25 },
+                'USDT': { value: 154.23, symbol: 'Bs', conversion: 154.23 },
             };
 
             const today = new Date();
@@ -346,4 +365,3 @@
     </script>
 </body>
 </html>
-
