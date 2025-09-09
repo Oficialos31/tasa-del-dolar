@@ -5,9 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hoy Dolarizado</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Start.io SDK -->
-    <script type="text/javascript">var startapp_sdk_init = { "appId": "208652124" };</script>
-    <script type="text/javascript" src="//d.startapp.com/startapp.js"></script>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // --- Global Variables (DO NOT TOUCH) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        // ----------------------------------------
+
+        let db, auth, userId = null;
+        let isAuthReady = false;
+
+        window.firebase = {};
+
+        window.firebase.init = async function() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('Debug');
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                    } else {
+                        userId = 'anon-' + crypto.randomUUID();
+                    }
+                    isAuthReady = true;
+                    // Llamamos a la función de inicio de la app después de que la autenticación esté lista
+                    window.app.start();
+                });
+
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+            }
+        };
+
+        window.firebase.getDb = () => db;
+        window.firebase.getUserId = () => userId;
+        window.firebase.isAuthReady = () => isAuthReady;
+        // Exposing Firestore functions to the global scope
+        window.firebase.doc = doc;
+        window.firebase.getDoc = getDoc;
+        window.firebase.setDoc = setDoc;
+        window.firebase.onSnapshot = onSnapshot;
+
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         body {
@@ -24,7 +78,7 @@
         .currency-btn.active {
             background-color: #10B981; /* green-500 */
             color: white;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            box-shadow: 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             transform: scale(1.05);
         }
 
@@ -60,12 +114,6 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-        
-        #ad-container {
-            width: 100%;
-            display: flex;
-            justify-content: center;
         }
     </style>
 </head>
@@ -151,9 +199,6 @@
             </div>
         </div>
         
-        <!-- Contenedor para el banner de anuncios -->
-        <div id="ad-container" class="mt-6 p-2 bg-gray-700 rounded-lg"></div>
-
     </main>
 
     <!-- Mensaje de confirmación de copia -->
@@ -165,7 +210,8 @@
         let rates = {};
         let currentCurrency = 'USD';
         const CACHE_KEY = 'currencyRates';
-        const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 horas en milisegundos
+        // Ajustado a 4 horas (4 * 60 * 60 * 1000) para mayor equilibrio entre precisión y eficiencia.
+        const CACHE_EXPIRY = 4 * 60 * 60 * 1000; 
         const HISTORY_KEY = 'conversionHistory';
 
         // Función para mostrar un mensaje temporal
@@ -184,26 +230,6 @@
             }, 3000);
         }
 
-        // Función para mostrar el anuncio de banner
-        function showBannerAd() {
-            if (typeof startapp !== 'undefined' && startapp.banner) {
-                startapp.banner.show({
-                    container: document.getElementById('ad-container')
-                });
-            }
-        }
-
-        // Función para mostrar el anuncio intersticial
-        function showInterstitialAd() {
-            if (typeof startapp !== 'undefined' && startapp.interstitial) {
-                startapp.interstitial.load({
-                    onReady: function() {
-                        startapp.interstitial.show();
-                    }
-                });
-            }
-        }
-        
         // Función para copiar la tasa al portapapeles
         function copyToClipboard() {
             const rateElement = document.getElementById('currency-rate');
@@ -221,23 +247,7 @@
             showMessage("¡Tasa copiada al portapapeles!");
         }
 
-        // Función para obtener las tasas de un API global (a prueba de fallos)
-        async function fetchRates() {
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('rate-display').classList.add('hidden');
-            
-            const cachedData = JSON.parse(localStorage.getItem(CACHE_KEY));
-            const now = new Date().getTime();
-
-            if (cachedData && (now - cachedData.timestamp < CACHE_EXPIRY)) {
-                // Usar datos del caché si no han expirado
-                rates = cachedData.rates;
-                updateDisplay(currentCurrency);
-                console.log("Usando datos de caché.");
-                return;
-            }
-            
-            console.log("Cargando datos frescos de la API.");
+        async function fetchAndSetRates() {
             try {
                 const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
                 if (!response.ok) {
@@ -246,31 +256,33 @@
                 const result = await response.json();
                 
                 if (result.rates && result.rates.VES && result.rates.EUR) {
-                    rates = {
+                    const newRates = {
                         'USD': { value: result.rates.VES.toFixed(2), symbol: 'Bs', conversion: result.rates.VES },
                         'EUR': { value: (result.rates.VES / result.rates.EUR).toFixed(2), symbol: 'Bs', conversion: result.rates.VES / result.rates.EUR },
                     };
                     
-                    // Guardar en caché
-                    localStorage.setItem(CACHE_KEY, JSON.stringify({
-                        rates: rates,
-                        timestamp: now
-                    }));
-                    
-                    updateDisplay(currentCurrency);
+                    const db = window.firebase.getDb();
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                    const rateDocRef = window.firebase.doc(db, `artifacts/${appId}/public/data/currency_rates`, 'current');
+                    await window.firebase.setDoc(rateDocRef, {
+                        rates: newRates,
+                        timestamp: Date.now()
+                    });
                 } else {
                     throw new Error('Datos de API no válidos.');
                 }
-
             } catch (error) {
                 console.error("Error al cargar la API:", error);
-                document.getElementById('loading').innerHTML = `
-                    <p class="text-sm text-red-500 text-center">
-                        Error al cargar la tasa. Intente más tarde.
-                    </p>
-                `;
-                document.getElementById('rate-display').classList.add('hidden');
+                showMessage("Error de conexión. No se pudo obtener la tasa en línea.");
             }
+        }
+
+        function updateUIWithRates(data) {
+            rates = data.rates;
+            updateDisplay(currentCurrency);
+            document.getElementById('last-updated').textContent = `(Actualizado: ${new Date(data.timestamp).toLocaleString('es-VE')})`;
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('rate-display').classList.remove('hidden');
         }
         
         // Función para actualizar la interfaz
@@ -278,7 +290,6 @@
             const rateInfo = rates[currency];
             if (rateInfo) {
                 document.getElementById('currency-rate').textContent = `${rateInfo.symbol} ${rateInfo.value}`;
-                document.getElementById('last-updated').textContent = new Date().toLocaleString('es-VE');
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('rate-display').classList.remove('hidden');
 
@@ -380,9 +391,13 @@
         document.getElementById('eur-btn').addEventListener('click', () => updateDisplay('EUR'));
         
         // Función para actualizar la tasa
-        document.getElementById('refresh-btn').addEventListener('click', () => {
-            fetchRates();
-            showInterstitialAd();
+        document.getElementById('refresh-btn').addEventListener('click', async () => {
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = 'Actualizando...';
+            await fetchAndSetRates();
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = 'Actualizar';
         });
 
         // Event listener para el nuevo botón de conversión
@@ -395,13 +410,35 @@
         document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
 
         // Cargar las tasas y mostrar el banner al cargar la página
-        window.onload = () => {
-            fetchRates();
-            showBannerAd();
-            updateOnlineStatus(); // Llamar a la función para actualizar el estado de conexión
-            loadHistory(); // Cargar el historial al iniciar
+        window.app = {};
+        window.app.start = async function() {
+            const db = window.firebase.getDb();
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const rateDocRef = window.firebase.doc(db, `artifacts/${appId}/public/data/currency_rates`, 'current');
+
+            const docSnap = await window.firebase.getDoc(rateDocRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (Date.now() - data.timestamp > CACHE_EXPIRY) {
+                    await fetchAndSetRates();
+                }
+            } else {
+                await fetchAndSetRates();
+            }
+
+            window.firebase.onSnapshot(rateDocRef, (doc) => {
+                if (doc.exists()) {
+                    updateUIWithRates(doc.data());
+                }
+            });
+
+            updateOnlineStatus();
+            loadHistory();
         };
-        
+
+        window.onload = () => {
+            window.firebase.init();
+        };
     </script>
 </body>
 </html>
