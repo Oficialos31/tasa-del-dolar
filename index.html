@@ -38,12 +38,14 @@
             padding: 0.75rem 1rem;
             border: 1px solid #4b5563; /* gray-600 */
             transition: all 0.2s ease-in-out;
+            background-image: linear-gradient(to right, #4B5563, #3B4452);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
         
         .currency-select:hover {
             border-color: #34D399; /* green-400 */
         }
-
+        
         #message-box {
             position: fixed;
             top: 20px;
@@ -58,6 +60,10 @@
             display: none;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
+            text-align: center;
+            position: relative; /* Needed for the close button positioning */
+            max-width: 90%;
+            box-sizing: border-box;
         }
 
         .spinner {
@@ -85,6 +91,50 @@
             box-shadow: 0 6px 8px rgba(16, 185, 129, 0.6);
             transform: translateY(-2px);
         }
+
+        .close-button {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .close-button:hover {
+            color: #ff5252;
+        }
+
+        .usdt-notice {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            color: #e5e7eb;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+
+        .conversion-toggle-btn {
+            background-color: #2D3A49;
+            color: #9CA3AF;
+            border: 1px solid #4B5563;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease-in-out;
+        }
+        .conversion-toggle-btn:hover {
+            background-color: #374151;
+            border-color: #6B7280;
+        }
+        .conversion-toggle-btn:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
@@ -98,7 +148,7 @@
 
         <!-- Cuadro de Selección de Tasa -->
         <div class="flex justify-center mb-6">
-            <select id="currency-display-select" class="currency-select w-full max-w-sm">
+            <select id="currency-display-select" class="currency-select w-full">
                 <option value="USD">Tasa USD</option>
                 <option value="EUR">Tasa Euro</option>
                 <option value="USDT">Tasa USDT</option>
@@ -123,15 +173,23 @@
                 </div>
             </div>
             
+            <!-- Aviso para la Tasa USDT -->
+            <div id="usdt-notice" class="usdt-notice hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+                <span>El valor reflejado de la Tasa USDT es un promedio del mercado P2P en Venezuela. Este valor puede variar según la plataforma y las transacciones.</span>
+            </div>
+
             <!-- Texto de actualización dinámico en una línea y la fecha en otra -->
-            <div class="text-sm text-gray-500 mb-2 flex flex-col items-center">
+            <div class="text-sm text-gray-500 mt-4 flex flex-col items-center">
                 <p id="update-text">Última Actualización de la Tasa BCV:</p>
                 <p><span id="last-updated">Cargando...</span></p>
             </div>
         </div>
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
 
-        <!-- Botón de Actualizar con Cooldown -->
+        <!-- Botón de Actualizar sin Cooldown -->
         <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-2 px-4 rounded-lg refresh-button">
             Actualizar
         </button>
@@ -139,14 +197,26 @@
         <!-- Sección Conversor de Divisas -->
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
             <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
-            <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
-                <input type="number" id="amount-input" class="w-full sm:w-1/2 p-3 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cantidad a convertir">
-                <select id="currency-select" class="w-full sm:w-1/2 p-3 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+            
+            <!-- Botón para alternar la dirección de la conversión, ahora en su propia línea -->
+            <div class="flex justify-center mb-4">
+                <button id="conversion-toggle-btn" class="conversion-toggle-btn w-full sm:w-1/2 flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <span id="toggle-text">Bolívares a Divisa</span>
+                    <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="flex flex-col space-y-4 mb-4 items-center justify-center">
+                <input type="number" id="amount-input" class="w-full p-3 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cantidad a convertir">
+                <select id="currency-select" class="w-full p-3 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500">
                     <option value="USD">Dólares (USD)</option>
                     <option value="EUR">Euros (EUR)</option>
                     <option value="USDT">USDT (Tether)</option>
                 </select>
             </div>
+            
             <button id="convert-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
                 Convertir
             </button>
@@ -173,28 +243,41 @@
 
     <!-- Mensaje de confirmación de copia -->
     <div id="message-box" class="hidden">
-        ¡Tasa copiada al portapapeles!
+        <span class="close-button" id="close-msg-box">&times;</span>
+        <p id="msg-text">¡Tasa copiada al portapapeles!</p>
     </div>
 
     <script>
         let rates = {};
         let currentCurrency = 'USD';
+        let conversionDirection = 'bs-to-currency';
         const HISTORY_KEY = 'conversionHistory';
+        let msgTimeout;
 
         // Muestra un mensaje temporal en la pantalla
-        function showMessage(message) {
+        function showMessage(message, duration = 3000) {
             const msgBox = document.getElementById('message-box');
-            msgBox.textContent = message;
+            const msgText = document.getElementById('msg-text');
+            msgText.textContent = message;
+            
+            clearTimeout(msgTimeout);
+            
             msgBox.style.display = 'block';
             setTimeout(() => {
                 msgBox.style.opacity = 1;
             }, 10);
-            setTimeout(() => {
-                msgBox.style.opacity = 0;
-            }, 2500);
+            
+            msgTimeout = setTimeout(() => {
+                hideMessage();
+            }, duration);
+        }
+
+        function hideMessage() {
+            const msgBox = document.getElementById('message-box');
+            msgBox.style.opacity = 0;
             setTimeout(() => {
                 msgBox.style.display = 'none';
-            }, 3000);
+            }, 300); // Wait for the fade out transition
         }
 
         // Copia la tasa al portapapeles
@@ -210,7 +293,7 @@
             document.execCommand('copy');
             document.body.removeChild(tempInput);
 
-            showMessage("¡Tasa copiada al portapapeles!");
+            showMessage("¡Tasa copiada al portapapeles!", 3000);
         }
 
         // Actualiza la interfaz con los datos de las tasas
@@ -226,17 +309,21 @@
             document.getElementById('last-updated').textContent = formattedDate;
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
+            updateConversionInputPlaceholder();
         }
         
         // Actualiza la interfaz para mostrar la moneda seleccionada
         function updateDisplay(currency) {
             const rateInfo = rates[currency];
             const updateTextElement = document.getElementById('update-text');
+            const usdtNotice = document.getElementById('usdt-notice');
 
             if (currency === 'USDT') {
-                updateTextElement.textContent = 'Última Actualización de la Tasa USDT:';
+                updateTextElement.textContent = 'Promedio del USDT en Venezuela:';
+                usdtNotice.classList.remove('hidden');
             } else {
                 updateTextElement.textContent = 'Última Actualización de la Tasa BCV:';
+                usdtNotice.classList.add('hidden');
             }
 
             if (rateInfo) {
@@ -245,6 +332,20 @@
                 
                 // Actualiza el select del conversor también para que coincida
                 document.getElementById('currency-select').value = currency;
+            }
+        }
+
+        // Actualiza el placeholder del input del conversor
+        function updateConversionInputPlaceholder() {
+            const amountInput = document.getElementById('amount-input');
+            const currencySelect = document.getElementById('currency-select');
+            const selectedCurrency = currencySelect.value;
+            const rateInfo = rates[selectedCurrency];
+
+            if (conversionDirection === 'bs-to-currency') {
+                amountInput.placeholder = 'Cantidad en Bolívares';
+            } else {
+                amountInput.placeholder = `Cantidad en ${selectedCurrency} (${rateInfo.displaySymbol})`;
             }
         }
 
@@ -260,27 +361,43 @@
             const rateInfo = rates[currency];
 
             if (isNaN(amount) || amount <= 0) {
-                showMessage("Por favor, ingrese una cantidad válida.");
+                showMessage("Por favor, ingrese una cantidad válida.", 3000);
                 return;
             }
             if (!rateInfo) {
-                showMessage("La tasa no está cargada. Por favor, espere a que se actualice o recargue la página.");
+                showMessage("La tasa no está cargada. Por favor, espere a que se actualice o recargue la página.", 3000);
                 return;
             }
+            
+            let convertedValue;
+            let fromCurrency, toCurrency, fromSymbol, toSymbol;
 
-            let convertedValue = (amount * rateInfo.conversion).toFixed(2);
-            convertedValueDiv.textContent = `${rateInfo.symbol} ${convertedValue}`;
+            if (conversionDirection === 'bs-to-currency') {
+                convertedValue = (amount / rateInfo.value).toFixed(2);
+                fromCurrency = 'Bolívares';
+                toCurrency = currency;
+                fromSymbol = 'Bs';
+                toSymbol = rateInfo.displaySymbol;
+            } else {
+                convertedValue = (amount * rateInfo.value).toFixed(2);
+                fromCurrency = currency;
+                toCurrency = 'Bolívares';
+                fromSymbol = rateInfo.displaySymbol;
+                toSymbol = 'Bs';
+            }
+            
+            convertedValueDiv.textContent = `${toSymbol} ${convertedValue}`;
 
-            saveConversionToHistory(amount, currency, convertedValue, rateInfo);
+            saveConversionToHistory(amount, fromCurrency, toCurrency, convertedValue, fromSymbol, toSymbol);
 
             conversionResultDiv.classList.remove('hidden');
         }
         
         // Guarda una conversión en el historial local
-        function saveConversionToHistory(amount, currency, result) {
+        function saveConversionToHistory(amount, fromCurrency, toCurrency, result, fromSymbol, toSymbol) {
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const timestamp = new Date().toLocaleString('es-VE');
-            history.unshift({ amount, currency, result, timestamp });
+            history.unshift({ amount, fromCurrency, toCurrency, result, timestamp, fromSymbol, toSymbol });
             if (history.length > 10) {
                 history.pop();
             }
@@ -302,7 +419,7 @@
                     const listItem = document.createElement('li');
                     listItem.classList.add('bg-gray-700', 'p-3', 'rounded-lg');
                     listItem.innerHTML = `
-                        <p class="text-sm"><span class="font-bold">${item.amount} ${item.currency}</span> a <span class="text-green-400 font-bold">${item.result} Bs</span></p>
+                        <p class="text-sm"><span class="font-bold">${item.amount} ${item.fromCurrency}</span> a <span class="text-green-400 font-bold">${item.result} ${item.toCurrency}</span></p>
                         <p class="text-xs text-gray-500">${item.timestamp}</p>
                     `;
                     historyList.appendChild(listItem);
@@ -315,20 +432,38 @@
         function clearHistory() {
             localStorage.removeItem(HISTORY_KEY);
             loadHistory();
-            showMessage("Historial de conversiones limpiado.");
+            showMessage("Historial de conversiones limpiado.", 3000);
         }
 
-        // Función para refrescar la página con un cooldown
-        function refreshPage() {
+        // Función para refrescar la página
+        async function refreshPage() {
             const refreshBtn = document.getElementById('refresh-btn');
             refreshBtn.disabled = true;
             refreshBtn.textContent = 'Actualizando...';
 
-            setTimeout(() => {
-                window.location.reload();
-            }, 5000); // 5 segundos de cooldown
+            await init();
+
+            refreshBtn.disabled = false;
+            refreshBtn.textContent = 'Actualizar';
         }
         
+        // Alterna la dirección de la conversión y actualiza la interfaz
+        function toggleConversionDirection() {
+            const toggleText = document.getElementById('toggle-text');
+            const toggleIcon = document.getElementById('toggle-icon');
+
+            if (conversionDirection === 'bs-to-currency') {
+                conversionDirection = 'currency-to-bs';
+                toggleText.textContent = 'Divisa a Bolívares';
+                toggleIcon.classList.add('rotate-180');
+            } else {
+                conversionDirection = 'bs-to-currency';
+                toggleText.textContent = 'Bolívares a Divisa';
+                toggleIcon.classList.remove('rotate-180');
+            }
+            updateConversionInputPlaceholder();
+        }
+
         // Temporizador para la actualización automática diaria
         function scheduleDailyUpdate() {
             const updateInterval = 30 * 60 * 1000; // 30 minutos en milisegundos
@@ -344,37 +479,39 @@
             }, updateInterval);
         }
 
-        // Event listener para el nuevo botón de conversión
+        // Event listeners
         document.getElementById('convert-btn').addEventListener('click', convertCurrency);
-
-        // Event listener para el botón de copiar
         document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
-
-        // Event listener para el botón de limpiar historial
         document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
-
-        // Event listener para el nuevo botón de refrescar
         document.getElementById('refresh-btn').addEventListener('click', refreshPage);
-
-        // Event listener para el nuevo select de tasas
         document.getElementById('currency-display-select').addEventListener('change', (event) => {
             updateDisplay(event.target.value);
         });
+        document.getElementById('close-msg-box').addEventListener('click', () => {
+            hideMessage();
+        });
+        document.getElementById('conversion-toggle-btn').addEventListener('click', toggleConversionDirection);
+        document.getElementById('currency-select').addEventListener('change', () => {
+            updateConversionInputPlaceholder();
+        });
 
         // Lógica de inicio: carga las tasas manuales
-        function init() {
+        async function init() {
+            // Simulamos un llamado a la API con un pequeño retraso
+            await new Promise(resolve => setTimeout(resolve, 500));
+
             // Tasas actuales (puedes cambiarlas aquí)
             const predefinedRates = {
-                'USD': { value: 154.98, symbol: 'Bs', conversion: 154.98 },
-                'EUR': { value: 182.09, symbol: 'Bs', conversion: 182.09 },
-                'USDT': { value: 154.23, symbol: 'Bs', conversion: 154.23 },
+                'USD': { value: 158.92, symbol: 'Bs', conversion: 158.92, displaySymbol: '$' },
+                'EUR': { value: 182.09, symbol: 'Bs', conversion: 182.09, displaySymbol: '€' },
+                'USDT': { value: 231.01, symbol: 'Bs', conversion: 231.01, displaySymbol: '₮' },
             };
 
             // Tasas futuras para el próximo día (puedes cambiarlas aquí)
             const futureRates = {
-                'USD': { value: 38.00, symbol: 'Bs', conversion: 38.00 },
-                'EUR': { value: 41.00, symbol: 'Bs', conversion: 41.00 },
-                'USDT': { value: 154.23, symbol: 'Bs', conversion: 154.23 },
+                'USD': { value: 38.00, symbol: 'Bs', conversion: 38.00, displaySymbol: '$' },
+                'EUR': { value: 41.00, symbol: 'Bs', conversion: 41.00, displaySymbol: '€' },
+                'USDT': { value: 231.01, symbol: 'Bs', conversion: 231.01, displaySymbol: '₮' },
             };
 
             const today = new Date();
