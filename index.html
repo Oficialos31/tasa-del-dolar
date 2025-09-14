@@ -17,18 +17,28 @@
             min-height: 100vh;
             padding: 1rem;
         }
-
-        .currency-btn.active {
-            background-color: #10B981; /* green-500 */
-            color: white;
-            box-shadow: 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            transform: scale(1.05);
+        
+        /* Animación de la barra degradada */
+        @keyframes gradient-scroll {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        .currency-btn.active:hover {
-            background-color: #10B981; /* Mantener el color verde en hover */
+        .animated-bar {
+            background: linear-gradient(90deg, #10B981, #6366F1, #9B5DE5, #10B981);
+            background-size: 200% 100%;
+            animation: gradient-scroll 10s ease infinite;
         }
 
+        .currency-select {
+            background-color: #1f2937; /* gray-800 */
+            color: #d1d5db; /* gray-300 */
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid #4b5563; /* gray-600 */
+        }
+        
         #message-box {
             position: fixed;
             top: 20px;
@@ -62,21 +72,20 @@
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
-    <main class="w-full h-full md:max-w-2xl mx-auto p-8 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center flex flex-col justify-center">
+    <main class="w-full h-full p-8 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center flex flex-col justify-center max-w-7xl mx-auto">
         <h1 class="text-4xl font-bold text-green-400 mb-2">Hoy Dolarizado</h1>
         <p class="text-gray-400 mb-6">Tasas Actualizadas del Banco Central de Venezuela</p>
         
-        <!-- Panel de Selección de Tasa -->
-        <div class="flex justify-center space-x-2 mb-6">
-            <button id="usd-btn" class="currency-btn bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors">
-                Tasa USD
-            </button>
-            <button id="eur-btn" class="currency-btn bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors">
-                Tasa Euro
-            </button>
-            <button id="usdt-btn" class="currency-btn bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold py-2 px-4 rounded-lg transition-colors">
-                Tasa USDT
-            </button>
+        <!-- Barra animada que coincide con el ancho del contenido -->
+        <div class="animated-bar w-full h-1 rounded-full mb-6"></div>
+
+        <!-- Cuadro de Selección de Tasa -->
+        <div class="flex justify-center mb-6">
+            <select id="currency-display-select" class="currency-select">
+                <option value="USD">Tasa USD</option>
+                <option value="EUR">Tasa Euro</option>
+                <option value="USDT">Tasa USDT</option>
+            </select>
         </div>
 
         <div id="loading" class="flex items-center justify-center space-x-2 text-gray-500 text-lg mb-4">
@@ -215,13 +224,9 @@
 
             if (rateInfo) {
                 document.getElementById('currency-rate').textContent = `${rateInfo.symbol} ${rateInfo.value}`;
-                
-                document.querySelectorAll('.currency-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                document.getElementById(`${currency.toLowerCase()}-btn`).classList.add('active');
                 currentCurrency = currency;
                 
+                // Actualiza el select del conversor también para que coincida
                 document.getElementById('currency-select').value = currency;
             }
         }
@@ -306,12 +311,22 @@
                 window.location.reload();
             }, 5000); // 5 segundos de cooldown
         }
-
-        // Event listeners para los botones de selección de moneda
-        document.getElementById('usd-btn').addEventListener('click', () => updateDisplay('USD'));
-        document.getElementById('eur-btn').addEventListener('click', () => updateDisplay('EUR'));
-        document.getElementById('usdt-btn').addEventListener('click', () => updateDisplay('USDT'));
         
+        // Temporizador para la actualización automática diaria
+        function scheduleDailyUpdate() {
+            const updateInterval = 30 * 60 * 1000; // 30 minutos en milisegundos
+            
+            setInterval(() => {
+                const today = new Date();
+                const today_vzla = new Date(today.toLocaleString('en-US', { timeZone: 'America/Caracas' }));
+                const is_new_day = today_vzla.getHours() >= 0 && today_vzla.getHours() <= 1; // 12am to 1am VZLA time
+                
+                if (is_new_day) {
+                    window.location.reload();
+                }
+            }, updateInterval);
+        }
+
         // Event listener para el nuevo botón de conversión
         document.getElementById('convert-btn').addEventListener('click', convertCurrency);
 
@@ -324,19 +339,24 @@
         // Event listener para el nuevo botón de refrescar
         document.getElementById('refresh-btn').addEventListener('click', refreshPage);
 
+        // Event listener para el nuevo select de tasas
+        document.getElementById('currency-display-select').addEventListener('change', (event) => {
+            updateDisplay(event.target.value);
+        });
+
         // Lógica de inicio: carga las tasas manuales
         function init() {
             // Tasas actuales (puedes cambiarlas aquí)
             const predefinedRates = {
-                'USD': { value: 158.92, symbol: 'Bs', conversion: 158.92 },
-                'EUR': { value: 186.58, symbol: 'Bs', conversion: 186.58 },
+                'USD': { value: 154.98, symbol: 'Bs', conversion: 154.98 },
+                'EUR': { value: 182.09, symbol: 'Bs', conversion: 182.09 },
                 'USDT': { value: 154.23, symbol: 'Bs', conversion: 154.23 },
             };
 
             // Tasas futuras para el próximo día (puedes cambiarlas aquí)
             const futureRates = {
-                'USD': { value: 156.37, symbol: 'Bs', conversion: 156.37 },
-                'EUR': { value: 183.33, symbol: 'Bs', conversion: 183.33 },
+                'USD': { value: 38.00, symbol: 'Bs', conversion: 38.00 },
+                'EUR': { value: 41.00, symbol: 'Bs', conversion: 41.00 },
                 'USDT': { value: 154.23, symbol: 'Bs', conversion: 154.23 },
             };
 
@@ -361,9 +381,10 @@
             loadHistory();
         }
 
-        window.onload = init;
+        window.onload = () => {
+            init();
+            scheduleDailyUpdate(); // Iniciar la verificación diaria
+        };
     </script>
 </body>
 </html>
-
-
