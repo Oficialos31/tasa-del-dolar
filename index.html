@@ -37,8 +37,13 @@
             border-radius: 0.5rem;
             padding: 0.75rem 1rem;
             border: 1px solid #4b5563; /* gray-600 */
+            transition: all 0.2s ease-in-out;
         }
         
+        .currency-select:hover {
+            border-color: #34D399; /* green-400 */
+        }
+
         #message-box {
             position: fixed;
             top: 20px;
@@ -68,6 +73,18 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .refresh-button {
+            background-image: linear-gradient(to right, #22C55E, #10B981);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.4); /* Tailwind's green-500 shadow */
+            transition: all 0.3s ease;
+        }
+
+        .refresh-button:hover {
+            background-image: linear-gradient(to right, #10B981, #22C55E);
+            box-shadow: 0 6px 8px rgba(16, 185, 129, 0.6);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
@@ -81,7 +98,7 @@
 
         <!-- Cuadro de Selección de Tasa -->
         <div class="flex justify-center mb-6">
-            <select id="currency-display-select" class="currency-select">
+            <select id="currency-display-select" class="currency-select w-full max-w-sm">
                 <option value="USD">Tasa USD</option>
                 <option value="EUR">Tasa Euro</option>
                 <option value="USDT">Tasa USDT</option>
@@ -94,7 +111,7 @@
         </div>
         
         <div id="rate-display" class="hidden">
-            <div class="bg-gray-700 p-4 rounded-lg mb-4">
+            <div class="bg-gray-700 p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-300">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
                     <p class="text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
@@ -115,7 +132,7 @@
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
 
         <!-- Botón de Actualizar con Cooldown -->
-        <button id="refresh-btn" class="w-full mt-4 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+        <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-2 px-4 rounded-lg refresh-button">
             Actualizar
         </button>
 
@@ -348,15 +365,15 @@
         function init() {
             // Tasas actuales (puedes cambiarlas aquí)
             const predefinedRates = {
-                'USD': { value: 158.92, symbol: 'Bs', conversion: 158.92 },
+                'USD': { value: 154.98, symbol: 'Bs', conversion: 154.98 },
                 'EUR': { value: 182.09, symbol: 'Bs', conversion: 182.09 },
                 'USDT': { value: 154.23, symbol: 'Bs', conversion: 154.23 },
             };
 
             // Tasas futuras para el próximo día (puedes cambiarlas aquí)
             const futureRates = {
-                'USD': { value: 158.92, symbol: 'Bs', conversion: 158.92 },
-                'EUR': { value: 186.58, symbol: 'Bs', conversion: 186.58 },
+                'USD': { value: 38.00, symbol: 'Bs', conversion: 38.00 },
+                'EUR': { value: 41.00, symbol: 'Bs', conversion: 41.00 },
                 'USDT': { value: 154.23, symbol: 'Bs', conversion: 154.23 },
             };
 
@@ -388,4 +405,3 @@
     </script>
 </body>
 </html>
-
