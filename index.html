@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hoy Dolarizado</title>
+    <title>Tasa VE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -171,12 +171,35 @@
             text-align: center;
             color: #c9d1d9;
         }
+
+        .dollar-icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <main class="w-full h-full p-8 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center flex flex-col justify-center max-w-7xl mx-auto">
-        <h1 class="text-4xl font-bold text-green-400 mb-2">Hoy Dolarizado</h1>
+        
+        <!-- Contenedor del ícono SVG -->
+        <div class="dollar-icon-container">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#6366F1;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="url(#iconGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 5.5V18.5" stroke="url(#iconGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <h1 class="text-4xl font-bold text-green-400 mb-2">Tasa VE</h1>
         <p class="text-gray-400 mb-6">Tasas Actualizadas del Banco Central de Venezuela</p>
         
         <!-- Barra animada que coincide con el ancho del contenido -->
@@ -345,7 +368,7 @@
         function copyToClipboard() {
             const rateElement = document.getElementById('currency-rate');
             const rateText = rateElement.textContent.trim();
-            const copyMessage = `Este es la Tasa del ${currentCurrency} (${rateText}) confirmada por el BCV reflejada en Hoy Dolarizado.`;
+            const copyMessage = `Este es la Tasa del ${currentCurrency} (${rateText}) confirmada por el BCV reflejada en Tasa VE.`;
             
             const tempInput = document.createElement('textarea');
             tempInput.value = copyMessage;
