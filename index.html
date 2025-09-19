@@ -160,6 +160,17 @@
             justify-content: space-between;
             align-items: center;
         }
+        
+        .ad-container {
+            width: 100%;
+            padding: 1rem;
+            margin-top: 2rem;
+            background-color: #1c2630;
+            border-radius: 0.5rem;
+            border: 1px solid #4b5563;
+            text-align: center;
+            color: #c9d1d9;
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
@@ -189,9 +200,10 @@
             <div class="bg-gray-700 p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-300">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
-                    <p class="text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
+                    <!-- Tamaño de la tasa ajustado para ser adaptable -->
+                    <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
                     <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
-                        <svg xmlns="http://www.3d6e9021.com/images/copy_icon.svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2A2 2 0 0114 5m-5 8h4m-4 4h4" />
                         </svg>
                     </button>
@@ -200,7 +212,7 @@
             
             <!-- Aviso para la Tasa USDT -->
             <div id="usdt-notice" class="usdt-notice hidden">
-                <svg xmlns="http://www.3d6e9021.com/images/info_icon.svg" class="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                 </svg>
                 <span>El valor reflejado de la Tasa USDT es un promedio del mercado P2P en Venezuela. Este valor puede variar según la plataforma y las transacciones.</span>
@@ -227,7 +239,7 @@
             <div class="flex justify-center mb-4">
                 <button id="conversion-toggle-btn" class="conversion-toggle-btn w-full sm:w-1/2 flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                     <span id="toggle-text">Divisa a Bolívares</span>
-                    <svg id="toggle-icon" xmlns="http://www.3d6e9021.com/images/toggle_icon.svg" class="h-5 w-5 transform transition-transform duration-300 rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                    <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300 rotate-180" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
                 </button>
@@ -263,6 +275,15 @@
                 </button>
             </div>
         </div>
+
+        <!-- Espacio para Anuncio de Start.io -->
+        <div id="ad-container" class="ad-container">
+            <!-- Pega aquí el código de tu anuncio de Start.io -->
+            <p>Espacio reservado para tu anuncio.</p>
+        </div>
+
+        <!-- Versión de la app -->
+        <p class="text-sm text-gray-600 mt-4">Versión: 1.0.0</p>
         
     </main>
 
@@ -271,13 +292,19 @@
         <span class="close-button" id="close-msg-box">&times;</span>
         <p id="msg-text">¡Tasa copiada al portapapeles!</p>
     </div>
+    
+    <!-- Mensaje de actualización de versión -->
+    <div id="update-message-box" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-sm py-2 px-4 rounded-full shadow-lg z-50 transition-opacity duration-500 ease-in-out hidden opacity-0">
+        Actualizando a la nueva versión...
+    </div>
 
     <script>
         let rates = {};
         let currentCurrency = 'USD';
-        let conversionDirection = 'currency-to-bs'; // Ahora predeterminado a Divisa a Bolívares
+        let conversionDirection = 'currency-to-bs';
         const HISTORY_KEY = 'conversionHistory';
         let msgTimeout;
+        let currentAppVersion = null;
 
         // Muestra un mensaje temporal en la pantalla
         function showMessage(message, duration = 3000) {
@@ -304,7 +331,16 @@
                 msgBox.style.display = 'none';
             }, 300); // Wait for the fade out transition
         }
-
+        
+        // Muestra un mensaje de actualización de la app
+        function showUpdateMessage() {
+            const updateMessageBox = document.getElementById('update-message-box');
+            updateMessageBox.classList.remove('hidden');
+            setTimeout(() => {
+                updateMessageBox.style.opacity = 1;
+            }, 10);
+        }
+        
         // Copia la tasa al portapapeles
         function copyToClipboard() {
             const rateElement = document.getElementById('currency-rate');
@@ -335,6 +371,7 @@
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
             updateConversionInputPlaceholder();
+            currentAppVersion = data.version;
         }
         
         // Actualiza la interfaz para mostrar la moneda seleccionada
@@ -466,6 +503,13 @@
             }
         }
 
+        // Limpia todo el historial de conversiones
+        function clearHistory() {
+            localStorage.removeItem(HISTORY_KEY);
+            loadHistory();
+            showMessage("Historial de conversiones limpiado.", 3000);
+        }
+
         // Elimina un solo elemento del historial
         function deleteHistoryItem(index) {
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
@@ -475,34 +519,10 @@
             showMessage("Conversión eliminada del historial.", 3000);
         }
 
-        // Limpia el historial de conversiones
-        function clearHistory() {
-            localStorage.removeItem(HISTORY_KEY);
-            loadHistory();
-            document.getElementById('conversion-result').classList.add('hidden');
-            showMessage("Historial de conversiones limpiado.", 3000);
-        }
-
         // Función para refrescar la página
-        async function refreshPage() {
-            const refreshBtn = document.getElementById('refresh-btn');
-            const loadingDiv = document.getElementById('loading');
-            const rateDisplayDiv = document.getElementById('rate-display');
-
-            // Muestra el estado de carga y deshabilita el botón
-            refreshBtn.disabled = true;
-            refreshBtn.textContent = 'Actualizando...';
-            loadingDiv.classList.remove('hidden');
-            rateDisplayDiv.classList.add('hidden');
-
-            // Llama a la función de inicialización para cargar las tasas
-            await init();
-
-            // Oculta el estado de carga y vuelve a habilitar el botón
-            loadingDiv.classList.add('hidden');
-            rateDisplayDiv.classList.remove('hidden');
-            refreshBtn.disabled = false;
-            refreshBtn.textContent = 'Actualizar';
+        function refreshPage() {
+            // Recarga la página para obtener la última versión del código y la nueva tasa
+            window.location.reload();
         }
         
         // Alterna la dirección de la conversión y actualiza la interfaz
@@ -521,20 +541,27 @@
             }
             updateConversionInputPlaceholder();
         }
-
-        // Temporizador para la actualización automática diaria
-        function scheduleDailyUpdate() {
-            const updateInterval = 30 * 60 * 1000; // 30 minutos en milisegundos
+        
+        // Simula la verificación de una nueva versión del código
+        function checkNewVersion() {
+            // En un entorno real, harías una llamada fetch a un endpoint
+            // que devuelve la versión actual de tu app (ej: https://tudominio.com/version.json)
+            // Aquí lo simulamos con un valor estático
+            const newVersion = "202509191540"; // Esto simula una nueva versión de código
             
-            setInterval(() => {
-                const today = new Date();
-                const today_vzla = new Date(today.toLocaleString('en-US', { timeZone: 'America/Caracas' }));
-                const is_new_day = today_vzla.getHours() >= 0 && today_vzla.getHours() <= 1; // 12am to 1am VZLA time
-                
-                if (is_new_day) {
+            console.log(`Versión actual: ${currentAppVersion}, Versión remota: ${newVersion}`);
+            
+            if (currentAppVersion && currentAppVersion !== newVersion) {
+                showUpdateMessage();
+                setTimeout(() => {
                     window.location.reload();
-                }
-            }, updateInterval);
+                }, 1000); // Dar tiempo para que el usuario vea el mensaje
+            }
+        }
+        
+        // Inicia el chequeo de actualizaciones cada 30 segundos
+        function startUpdateCheckInterval() {
+            setInterval(checkNewVersion, 30000); // 30 segundos
         }
 
         // Event listeners
@@ -558,50 +585,26 @@
             // Simulamos un llamado a la API con un pequeño retraso
             await new Promise(resolve => setTimeout(resolve, 500));
 
-            // Tasas actuales (puedes cambiarlas aquí)
-            const predefinedRates = {
-                'USD': { value: 165.41, symbol: 'Bs', conversion: 165.41, displaySymbol: '$' },
-                'EUR': { value: 194.74, symbol: 'Bs', conversion: 194.74, displaySymbol: '€' },
-                'USDT': { value: 235.24, symbol: 'Bs', conversion: 235.24, displaySymbol: '₮' },
+            // En un entorno real, esta data vendría de un endpoint dinámico
+            const data = {
+                rates: {
+                    'USD': { value: 165.41, symbol: 'Bs', conversion: 165.41, displaySymbol: '$' },
+                    'EUR': { value: 194.74, symbol: 'Bs', conversion: 194.74, displaySymbol: '€' },
+                    'USDT': { value: 240.55, symbol: 'Bs', conversion: 240.55, displaySymbol: '₮' },
+                },
+                timestamp: Date.now(),
+                version: "202509191540"
             };
-
-            // Tasas futuras para el próximo día (puedes cambiarlas aquí)
-            const futureRates = {
-                'USD': { value: 158.92, symbol: 'Bs', conversion: 158.92, displaySymbol: '$' },
-                'EUR': { value: 182.09, symbol: 'Bs', conversion: 182.09, displaySymbol: '€' },
-                'USDT': { value: 231.01, symbol: 'Bs', conversion: 231.01, displaySymbol: '₮' },
-            };
-
-            const today = new Date();
-            const today_vzla = new Date(today.toLocaleString('en-US', { timeZone: 'America/Caracas' }));
-            const is_new_day = today_vzla.getHours() >= 0 && today_vzla.getHours() <= 1; // 12am to 1am VZLA time
-
-            if (is_new_day) {
-                const data = {
-                    rates: futureRates,
-                    timestamp: Date.now()
-                };
-                updateUIWithRates(data);
-            } else {
-                const data = {
-                    rates: predefinedRates,
-                    timestamp: Date.now()
-                };
-                updateUIWithRates(data);
-            }
             
+            updateUIWithRates(data);
             loadHistory();
-            updateConversionInputPlaceholder(); // Asegura el placeholder correcto en el inicio
+            updateConversionInputPlaceholder();
         }
 
         window.onload = () => {
             init();
-            scheduleDailyUpdate(); // Iniciar la verificación diaria
+            startUpdateCheckInterval();
         };
     </script>
 </body>
 </html>
-
-
-
-
