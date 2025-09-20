@@ -23,9 +23,8 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--card-bg);
-            color: var(--text-color);
             min-height: 100vh;
-            padding: 0; /* Remove body padding for full-screen effect */
+            padding: 0;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
@@ -114,8 +113,8 @@
         /* Styles for the settings modal */
         #settings-menu {
             position: absolute;
-            top: 50px;
-            right: 0;
+            top: 65px;
+            right: 1.5rem;
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 0.75rem;
@@ -142,9 +141,9 @@
         /* Adjusted styles for the message box to appear at the top */
         #message-box {
             position: fixed;
-            top: 2rem; /* Adjusted for spacing from the top */
+            top: 2rem; 
             left: 50%;
-            transform: translateX(-50%); /* Centered horizontally */
+            transform: translateX(-50%); 
             padding: 1rem 2rem;
             background-color: #1c2630;
             color: #c9d1d9;
@@ -155,15 +154,24 @@
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
             text-align: center;
-            white-space: nowrap; /* Prevents text from wrapping on one line */
+            max-width: 80%; /* Ensure it doesn't get too wide on desktops */
+            white-space: normal; /* Allow text to wrap on multiple lines */
+        }
+        
+        /* New styles for the gear icon animation */
+        .gear-icon {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .gear-icon:hover, .gear-icon.active {
+            transform: rotate(45deg);
         }
     </style>
 </head>
 <body class="theme-dark">
 
-    <main class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section">
-        
-        <div class="flex justify-between items-center w-full mb-4 relative">
+    <header class="fixed top-0 left-0 w-full px-6 py-4 bg-gray-800 z-50">
+        <div class="flex justify-between items-center relative">
             <!-- Icono y título de la aplicación -->
             <div class="flex items-center space-x-2">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
@@ -175,7 +183,7 @@
             
             <!-- Botón de configuración -->
             <button id="settings-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 gear-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                     <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c.996 .608 2.296 .32 2.572 -1.065z"></path>
                     <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
@@ -184,6 +192,9 @@
 
             <!-- Menú de configuración -->
             <div id="settings-menu" class="rounded-xl p-4 flex flex-col space-y-4">
+                <button id="show-time-btn" class="config-button">
+                    Ver Hora
+                </button>
                 <button id="clear-history-btn" class="config-button text-red-400">
                     Limpiar Historial
                 </button>
@@ -191,11 +202,13 @@
                     Reiniciar App
                 </button>
                 <div class="text-center text-sm text-gray-500 pt-2">
-                    Versión: 2.4.1
+                    Versión: <span id="app-version">1.0</span>
                 </div>
             </div>
         </div>
+    </header>
 
+    <main class="w-full h-full min-h-screen pt-20 p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section">
         <p class="text-gray-400 mb-6">Tasas Actualizadas del Banco Central de Venezuela</p>
         
         <div class="animated-bar w-full h-1 rounded-full mb-6"></div>
@@ -245,7 +258,7 @@
             <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
             
             <div class="flex justify-center mb-4">
-                <button id="conversion-toggle-btn" class="conversion-toggle-btn w-full flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                <button id="conversion-toggle-btn" class="conversion-toggle-btn w-full text-white flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                     <span id="toggle-text">Divisa a Bolívares</span>
                     <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -277,7 +290,7 @@
         </div>
 
         <div class="ad-container">
-            <p>Espacio reservado para tu anuncio.</p>
+            <p>Espacio reservado para anuncio.</p>
         </div>
         
     </main>
@@ -294,9 +307,20 @@
         let msgTimeout;
 
         // Functions for the settings menu
-        document.getElementById('settings-btn').addEventListener('click', () => {
-            const menu = document.getElementById('settings-menu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsMenu = document.getElementById('settings-menu');
+        const gearIcon = document.querySelector('.gear-icon');
+
+        settingsBtn.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent the window click listener from closing the menu immediately
+            const isMenuOpen = settingsMenu.style.display === 'block';
+            if (isMenuOpen) {
+                settingsMenu.style.display = 'none';
+                gearIcon.classList.remove('active');
+            } else {
+                settingsMenu.style.display = 'block';
+                gearIcon.classList.add('active');
+            }
         });
 
         document.getElementById('refresh-page-btn').addEventListener('click', () => {
@@ -317,6 +341,13 @@
             }
             updateConversionInputPlaceholder();
         });
+
+        // Function to show the current time
+        function showCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            showMessage(`Hora actual: ${timeString}`, 5000);
+        }
 
         function showMessage(message, duration = 3000) {
             const msgBox = document.getElementById('message-box');
@@ -504,7 +535,7 @@
         function refreshPage() {
             window.location.reload();
         }
-        
+
         function init() {
             // Simulated data for demonstration
             const data = {
@@ -532,11 +563,15 @@
         document.getElementById('currency-select').addEventListener('change', () => {
             updateConversionInputPlaceholder();
         });
+        document.getElementById('show-time-btn').addEventListener('click', showCurrentTime);
 
         window.onclick = function(event) {
             const settingsMenu = document.getElementById('settings-menu');
-            if (!event.target.closest('#settings-btn') && !event.target.closest('#settings-menu')) {
+            const settingsBtn = document.getElementById('settings-btn');
+            const gearIcon = document.querySelector('.gear-icon');
+            if (!settingsBtn.contains(event.target) && !settingsMenu.contains(event.target)) {
                 settingsMenu.style.display = 'none';
+                gearIcon.classList.remove('active');
             }
         }
 
