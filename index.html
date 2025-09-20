@@ -138,11 +138,13 @@
         .text-center {
             text-align: center;
         }
+
+        /* Adjusted styles for the message box to appear at the top */
         #message-box {
             position: fixed;
-            top: 50%;
+            top: 2rem; /* Adjusted for spacing from the top */
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%); /* Centered horizontally */
             padding: 1rem 2rem;
             background-color: #1c2630;
             color: #c9d1d9;
@@ -153,6 +155,7 @@
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
             text-align: center;
+            white-space: nowrap; /* Prevents text from wrapping on one line */
         }
     </style>
 </head>
