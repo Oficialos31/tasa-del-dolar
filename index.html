@@ -154,11 +154,11 @@
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
             text-align: center;
-            max-width: 80%; /* Ensure it doesn't get too wide on desktops */
-            white-space: normal; /* Allow text to wrap on multiple lines */
+            max-width: 80%;
+            white-space: normal;
         }
         
-        /* New styles for the gear icon animation */
+        /* New styles for the gear icon animation and positioning */
         .gear-icon {
             transition: transform 0.3s ease-in-out;
         }
@@ -166,49 +166,52 @@
         .gear-icon:hover, .gear-icon.active {
             transform: rotate(45deg);
         }
+
+        .fixed-gear {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 100;
+        }
     </style>
 </head>
 <body class="theme-dark">
 
-    <header class="fixed top-0 left-0 w-full px-6 py-4 bg-gray-800 z-50">
-        <div class="flex justify-between items-center relative">
-            <!-- Icono y título de la aplicación -->
-            <div class="flex items-center space-x-2">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
-                    <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 5.5V18.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <h1 class="text-3xl font-bold text-green-400">Tasa VE</h1>
-            </div>
-            
-            <!-- Botón de configuración -->
-            <button id="settings-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 gear-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c.996 .608 2.296 .32 2.572 -1.065z"></path>
-                    <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
-                </svg>
+    <!-- Botón de configuración fijo en la esquina superior derecha -->
+    <div class="fixed-gear">
+        <button id="settings-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 gear-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c.996 .608 2.296 .32 2.572 -1.065z"></path>
+                <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+            </svg>
+        </button>
+        <!-- Menú de configuración -->
+        <div id="settings-menu" class="rounded-xl p-4 flex flex-col space-y-4">
+            <button id="show-time-btn" class="config-button">
+                Ver Hora
             </button>
-
-            <!-- Menú de configuración -->
-            <div id="settings-menu" class="rounded-xl p-4 flex flex-col space-y-4">
-                <button id="show-time-btn" class="config-button">
-                    Ver Hora
-                </button>
-                <button id="clear-history-btn" class="config-button text-red-400">
-                    Limpiar Historial
-                </button>
-                <button id="refresh-page-btn" class="config-button">
-                    Reiniciar App
-                </button>
-                <div class="text-center text-sm text-gray-500 pt-2">
-                    Versión: <span id="app-version">1.0</span>
-                </div>
+            <button id="clear-history-btn" class="config-button text-red-400">
+                Limpiar Historial
+            </button>
+            <button id="refresh-page-btn" class="config-button">
+                Reiniciar App
+            </button>
+            <div class="text-center text-sm text-gray-500 pt-2">
+                Versión: <span id="app-version">1.0</span>
             </div>
         </div>
-    </header>
+    </div>
 
-    <main class="w-full h-full min-h-screen pt-20 p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section">
+    <main class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section">
+        <div class="flex items-center justify-center space-x-2 w-full mb-4">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
+                <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 5.5V18.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h1 class="text-3xl font-bold text-green-400">Tasa VE</h1>
+        </div>
+        
         <p class="text-gray-400 mb-6">Tasas Actualizadas del Banco Central de Venezuela</p>
         
         <div class="animated-bar w-full h-1 rounded-full mb-6"></div>
@@ -312,7 +315,7 @@
         const gearIcon = document.querySelector('.gear-icon');
 
         settingsBtn.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent the window click listener from closing the menu immediately
+            event.stopPropagation();
             const isMenuOpen = settingsMenu.style.display === 'block';
             if (isMenuOpen) {
                 settingsMenu.style.display = 'none';
@@ -327,7 +330,6 @@
             window.location.reload();
         });
 
-        // Toggle icon rotation
         document.getElementById('conversion-toggle-btn').addEventListener('click', () => {
             const toggleIcon = document.getElementById('toggle-icon');
             if (conversionDirection === 'currency-to-bs') {
@@ -342,7 +344,6 @@
             updateConversionInputPlaceholder();
         });
 
-        // Function to show the current time
         function showCurrentTime() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
