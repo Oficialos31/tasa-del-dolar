@@ -7,69 +7,67 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        
+        /* Base styles for themes */
+        .theme-dark {
+            --bg-color: #0d1117;
+            --text-color: #c9d1d9;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #22C55E;
+            --secondary-text: #8b949e;
+            --gradient-start: #22C55E;
+            --gradient-end: #10B981;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0d1117;
-            color: #c9d1d9;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        /* Animación de la barra degradada */
-        @keyframes gradient-scroll {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .bg-gray-800 { background-color: var(--card-bg); }
+        .border-gray-700 { border-color: var(--border-color); }
+        .text-green-400 { color: var(--accent-color); }
+        .text-gray-400 { color: var(--secondary-text); }
+        .text-gray-500 { color: var(--secondary-text); }
+        .text-gray-600 { color: var(--secondary-text); }
+        .bg-gray-700 { background-color: var(--border-color); }
+
+        /* General element colors for both themes */
+        .gradient-button {
+            background-image: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
         }
 
-        .animated-bar {
-            background: linear-gradient(90deg, #10B981, #6366F1, #9B5DE5, #10B981);
-            background-size: 200% 100%;
-            animation: gradient-scroll 10s ease infinite;
+        .gradient-button:hover {
+            background-image: linear-gradient(to right, var(--gradient-end), var(--gradient-start));
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.6);
+            transform: translateY(-2px);
         }
 
-        .currency-select {
-            background-color: #1f2937; /* gray-800 */
-            color: #d1d5db; /* gray-300 */
+        .currency-select, .converter-input {
+            background-color: var(--card-bg);
+            color: var(--text-color);
             border-radius: 0.5rem;
             padding: 0.75rem 1rem;
-            border: 1px solid #4b5563; /* gray-600 */
+            border: 1px solid var(--border-color);
             transition: all 0.2s ease-in-out;
-            background-image: linear-gradient(to right, #4B5563, #3B4452);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
         }
         
-        .currency-select:hover {
-            border-color: #34D399; /* green-400 */
-        }
+        .currency-select:hover, .converter-input:hover { border-color: var(--accent-color); }
         
-        #message-box {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 1rem 2rem;
-            background-color: #1c2630;
-            color: #c9d1d9;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-            z-index: 1000;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            text-align: center;
-            position: relative; /* Needed for the close button positioning */
-            max-width: 90%;
-            box-sizing: border-box;
-        }
-
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid var(--border-color);
             border-radius: 50%;
-            border-top: 4px solid #10B981;
+            border-top: 4px solid var(--accent-color);
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
@@ -80,64 +78,19 @@
             100% { transform: rotate(360deg); }
         }
 
-        .refresh-button {
-            background-image: linear-gradient(to right, #22C55E, #10B981);
-            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.4); /* Tailwind's green-500 shadow */
-            transition: all 0.3s ease;
-        }
-
-        .refresh-button:hover {
-            background-image: linear-gradient(to right, #10B981, #22C55E);
-            box-shadow: 0 6px 8px rgba(16, 185, 129, 0.6);
-            transform: translateY(-2px);
-        }
-
-        .close-button {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            line-height: 1;
-            color: #d1d5db;
-            cursor: pointer;
-            transition: color 0.2s ease-in-out;
-        }
-
-        .close-button:hover {
-            color: #ff5252;
-        }
-
-        .usdt-notice {
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .ad-container {
+            width: 100%;
             padding: 1rem;
+            margin-top: 2rem;
+            background-color: var(--card-bg);
             border-radius: 0.5rem;
-            margin-top: 1rem;
-            display: flex;
-            align-items: center;
-            color: #e5e7eb;
-            font-size: 0.875rem;
-            line-height: 1.25rem;
-        }
-
-        .conversion-toggle-btn {
-            background-color: #2D3A49;
-            color: #9CA3AF;
-            border: 1px solid #4B5563;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: all 0.2s ease-in-out;
-        }
-        .conversion-toggle-btn:hover {
-            background-color: #374151;
-            border-color: #6B7280;
-        }
-        .conversion-toggle-btn:active {
-            transform: scale(0.98);
+            border: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-color);
         }
 
         .delete-history-item {
-            background-color: #EF4444; /* red-500 */
+            background-color: #EF4444;
             color: white;
             border-radius: 50%;
             width: 1.5rem;
@@ -151,61 +104,102 @@
         }
 
         .delete-history-item:hover {
-            background-color: #DC2626; /* red-600 */
+            background-color: #DC2626;
             transform: scale(1.1);
         }
-
+        
         .history-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
-        .ad-container {
-            width: 100%;
-            padding: 1rem;
-            margin-top: 2rem;
-            background-color: #1c2630;
-            border-radius: 0.5rem;
-            border: 1px solid #4b5563;
-            text-align: center;
-            color: #c9d1d9;
-        }
 
-        .dollar-icon-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1rem;
+        /* Styles for the settings modal */
+        #settings-menu {
+            position: absolute;
+            top: 50px;
+            right: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            z-index: 50;
+            min-width: 250px;
+            padding: 1rem;
+            display: none;
         }
-        
+        .config-button {
+            background-color: var(--border-color);
+            color: var(--text-color);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        .config-button:hover {
+            background-color: #3B4452;
+        }
+        .text-center {
+            text-align: center;
+        }
+        #message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 1rem 2rem;
+            background-color: #1c2630;
+            color: #c9d1d9;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            text-align: center;
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body class="theme-dark">
 
-    <main class="w-full h-full p-8 bg-gray-800 rounded-lg shadow-xl border border-gray-700 text-center flex flex-col justify-center max-w-7xl mx-auto">
+    <main class="w-full max-w-lg p-6 md:p-8 bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 text-center flex flex-col justify-center animate-fade-in-section">
         
-        <!-- Contenedor del ícono SVG -->
-        <div class="dollar-icon-container">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#6366F1;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="url(#iconGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M12 5.5V18.5" stroke="url(#iconGradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <div class="flex justify-between items-center w-full mb-4 relative">
+            <!-- Icono y título de la aplicación -->
+            <div class="flex items-center space-x-2">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
+                    <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 5.5V18.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1 class="text-3xl font-bold text-green-400">Tasa VE</h1>
+            </div>
+            
+            <!-- Botón de configuración -->
+            <button id="settings-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c.996 .608 2.296 .32 2.572 -1.065z"></path>
+                    <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                </svg>
+            </button>
+
+            <!-- Menú de configuración -->
+            <div id="settings-menu" class="rounded-xl p-4 flex flex-col space-y-4">
+                <button id="clear-history-btn" class="config-button text-red-400">
+                    Limpiar Historial
+                </button>
+                <button id="refresh-page-btn" class="config-button">
+                    Reiniciar App
+                </button>
+                <div class="text-center text-sm text-gray-500 pt-2">
+                    Versión: 2.4.1
+                </div>
+            </div>
         </div>
 
-        <h1 class="text-4xl font-bold text-green-400 mb-2">Tasa VE</h1>
         <p class="text-gray-400 mb-6">Tasas Actualizadas del Banco Central de Venezuela</p>
         
-        <!-- Barra animada que coincide con el ancho del contenido -->
         <div class="animated-bar w-full h-1 rounded-full mb-6"></div>
 
-        <!-- Cuadro de Selección de Tasa -->
         <div class="flex justify-center mb-6">
             <select id="currency-display-select" class="currency-select w-full">
                 <option value="USD">Tasa USD</option>
@@ -221,9 +215,8 @@
         
         <div id="rate-display" class="hidden">
             <div class="bg-gray-700 p-4 rounded-lg mb-4 w-full">
-                <p class="text-xl text-gray-300">Valor actual:</p>
+                <p class="text-xl text-gray-400">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
-                    <!-- Tamaño de la tasa ajustado para ser adaptable -->
                     <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
                     <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -233,15 +226,10 @@
                 </div>
             </div>
             
-            <!-- Aviso para la Tasa USDT -->
-            <div id="usdt-notice" class="usdt-notice hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                </svg>
-                <span>El valor reflejado de la Tasa USDT es un promedio del mercado P2P en Venezuela. Este valor puede variar según la plataforma y las transacciones.</span>
+            <div id="usdt-notice" class="bg-gray-700 p-4 rounded-xl text-sm text-gray-400 hidden">
+                <p>El valor del USDT es un promedio del mercado P2P. Puede variar.</p>
             </div>
 
-            <!-- Texto de actualización dinámico en una línea y la fecha en otra -->
             <div class="text-sm text-gray-500 mt-4 flex flex-col items-center">
                 <p id="update-text">Última Actualización de la Tasa BCV:</p>
                 <p><span id="last-updated">Cargando...</span></p>
@@ -249,28 +237,25 @@
         </div>
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
 
-        <!-- Botón de Actualizar sin Cooldown -->
-        <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-2 px-4 rounded-lg refresh-button">
-            Actualizar
+        <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-3 px-4 rounded-xl gradient-button pulse-animation">
+            Actualizar Tasa
         </button>
 
-        <!-- Sección Conversor de Divisas -->
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
             <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
             
-            <!-- Botón para alternar la dirección de la conversión, ahora en su propia línea -->
             <div class="flex justify-center mb-4">
-                <button id="conversion-toggle-btn" class="conversion-toggle-btn w-full sm:w-1/2 flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                <button id="conversion-toggle-btn" class="conversion-toggle-btn w-full flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
                     <span id="toggle-text">Divisa a Bolívares</span>
-                    <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300 rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                    <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
                 </button>
             </div>
 
             <div class="flex flex-col space-y-4 mb-4 items-center justify-center">
-                <input type="number" id="amount-input" class="w-full p-3 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500" placeholder="Cantidad a convertir">
-                <select id="currency-select" class="w-full p-3 rounded-lg bg-gray-700 text-gray-300 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <input type="number" id="amount-input" class="converter-input w-full p-3" placeholder="Cantidad a convertir">
+                <select id="currency-select" class="converter-input w-full p-3">
                     <option value="USD">Dólares (USD)</option>
                     <option value="EUR">Euros (EUR)</option>
                     <option value="USDT">USDT (Tether)</option>
@@ -286,50 +271,53 @@
             </div>
         </div>
 
-        <!-- Nueva sección: Historial de Conversiones -->
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
             <h2 class="text-2xl font-bold text-green-400 mb-4">Historial de Conversiones</h2>
-            <ul id="history-list" class="space-y-2 text-gray-400">
-                <!-- Los elementos del historial se insertarán aquí -->
-            </ul>
-            <div class="flex justify-center mt-4">
-                <button id="clear-history-btn" class="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition-colors hidden">
-                    Limpiar Historial
-                </button>
-            </div>
+            <ul id="history-list" class="space-y-2 text-gray-400"></ul>
         </div>
 
-        <!-- Espacio para Anuncio de Start.io -->
-        <div id="ad-container" class="ad-container">
-            <!-- Pega aquí el código de tu anuncio de Start.io -->
+        <div class="ad-container">
             <p>Espacio reservado para tu anuncio.</p>
         </div>
-
-        <!-- Versión de la app -->
-        <p class="text-sm text-gray-600 mt-4">Versión: 1.0.0</p>
         
     </main>
 
-    <!-- Mensaje de confirmación de copia -->
     <div id="message-box" class="hidden">
-        <span class="close-button" id="close-msg-box">&times;</span>
         <p id="msg-text">¡Tasa copiada al portapapeles!</p>
     </div>
     
-    <!-- Mensaje de actualización de versión -->
-    <div id="update-message-box" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-sm py-2 px-4 rounded-full shadow-lg z-50 transition-opacity duration-500 ease-in-out hidden opacity-0">
-        Actualizando a la nueva versión...
-    </div>
-
-    <script>
+    <script type="module">
         let rates = {};
         let currentCurrency = 'USD';
         let conversionDirection = 'currency-to-bs';
         const HISTORY_KEY = 'conversionHistory';
         let msgTimeout;
-        let currentAppVersion = null;
 
-        // Muestra un mensaje temporal en la pantalla
+        // Functions for the settings menu
+        document.getElementById('settings-btn').addEventListener('click', () => {
+            const menu = document.getElementById('settings-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.getElementById('refresh-page-btn').addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        // Toggle icon rotation
+        document.getElementById('conversion-toggle-btn').addEventListener('click', () => {
+            const toggleIcon = document.getElementById('toggle-icon');
+            if (conversionDirection === 'currency-to-bs') {
+                document.getElementById('toggle-text').textContent = 'Bolívares a Divisa';
+                toggleIcon.style.transform = 'rotate(180deg)';
+                conversionDirection = 'bs-to-currency';
+            } else {
+                document.getElementById('toggle-text').textContent = 'Divisa a Bolívares';
+                toggleIcon.style.transform = 'rotate(0deg)';
+                conversionDirection = 'currency-to-bs';
+            }
+            updateConversionInputPlaceholder();
+        });
+
         function showMessage(message, duration = 3000) {
             const msgBox = document.getElementById('message-box');
             const msgText = document.getElementById('msg-text');
@@ -352,19 +340,9 @@
             msgBox.style.opacity = 0;
             setTimeout(() => {
                 msgBox.style.display = 'none';
-            }, 300); // Wait for the fade out transition
+            }, 300);
         }
         
-        // Muestra un mensaje de actualización de la app
-        function showUpdateMessage() {
-            const updateMessageBox = document.getElementById('update-message-box');
-            updateMessageBox.classList.remove('hidden');
-            setTimeout(() => {
-                updateMessageBox.style.opacity = 1;
-            }, 10);
-        }
-        
-        // Copia la tasa al portapapeles
         function copyToClipboard() {
             const rateElement = document.getElementById('currency-rate');
             const rateText = rateElement.textContent.trim();
@@ -380,11 +358,9 @@
             showMessage("¡Tasa copiada al portapapeles!", 3000);
         }
 
-        // Actualiza la interfaz con los datos de las tasas
         function updateUIWithRates(data) {
             rates = data.rates;
             updateDisplay(currentCurrency);
-            // Formatea la fecha para mostrar el día, mes y año sin la hora
             const formattedDate = new Intl.DateTimeFormat('es-VE', {
                 day: 'numeric',
                 month: 'long',
@@ -394,10 +370,8 @@
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
             updateConversionInputPlaceholder();
-            currentAppVersion = data.version;
         }
         
-        // Actualiza la interfaz para mostrar la moneda seleccionada
         function updateDisplay(currency) {
             const rateInfo = rates[currency];
             const updateTextElement = document.getElementById('update-text');
@@ -414,13 +388,10 @@
             if (rateInfo) {
                 document.getElementById('currency-rate').textContent = `${rateInfo.symbol} ${rateInfo.value}`;
                 currentCurrency = currency;
-                
-                // Actualiza el select del conversor también para que coincida
                 document.getElementById('currency-select').value = currency;
             }
         }
 
-        // Actualiza el placeholder del input del conversor
         function updateConversionInputPlaceholder() {
             const amountInput = document.getElementById('amount-input');
             const currencySelect = document.getElementById('currency-select');
@@ -434,7 +405,6 @@
             }
         }
 
-        // Convierte la cantidad de divisas
         function convertCurrency() {
             const amountInput = document.getElementById('amount-input');
             const currencySelect = document.getElementById('currency-select');
@@ -472,13 +442,10 @@
             }
             
             convertedValueDiv.textContent = `${toSymbol} ${convertedValue}`;
-
             saveConversionToHistory(amount, fromCurrency, toCurrency, convertedValue, fromSymbol, toSymbol);
-
             conversionResultDiv.classList.remove('hidden');
         }
         
-        // Guarda una conversión en el historial local
         function saveConversionToHistory(amount, fromCurrency, toCurrency, result, fromSymbol, toSymbol) {
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const timestamp = new Date().toLocaleString('es-VE');
@@ -490,15 +457,12 @@
             loadHistory();
         }
 
-        // Carga el historial de conversiones desde el almacenamiento local
         function loadHistory() {
             const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const historyList = document.getElementById('history-list');
-            const clearBtn = document.getElementById('clear-history-btn');
             historyList.innerHTML = '';
             if (history.length === 0) {
                 historyList.innerHTML = '<p class="text-center text-gray-500">Aún no hay conversiones en tu historial.</p>';
-                clearBtn.classList.add('hidden');
             } else {
                 history.forEach((item, index) => {
                     const listItem = document.createElement('li');
@@ -514,9 +478,6 @@
                     `;
                     historyList.appendChild(listItem);
                 });
-                clearBtn.classList.remove('hidden');
-
-                // Attach event listeners for the new delete buttons
                 document.querySelectorAll('.delete-history-item').forEach(button => {
                     button.addEventListener('click', (event) => {
                         const index = event.target.dataset.index;
@@ -526,14 +487,12 @@
             }
         }
 
-        // Limpia todo el historial de conversiones
         function clearHistory() {
             localStorage.removeItem(HISTORY_KEY);
             loadHistory();
             showMessage("Historial de conversiones limpiado.", 3000);
         }
 
-        // Elimina un solo elemento del historial
         function deleteHistoryItem(index) {
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             history.splice(index, 1);
@@ -542,49 +501,24 @@
             showMessage("Conversión eliminada del historial.", 3000);
         }
 
-        // Función para refrescar la página
         function refreshPage() {
-            // Recarga la página para obtener la última versión del código y la nueva tasa
             window.location.reload();
         }
         
-        // Alterna la dirección de la conversión y actualiza la interfaz
-        function toggleConversionDirection() {
-            const toggleText = document.getElementById('toggle-text');
-            const toggleIcon = document.getElementById('toggle-icon');
-
-            if (conversionDirection === 'bs-to-currency') {
-                conversionDirection = 'currency-to-bs';
-                toggleText.textContent = 'Divisa a Bolívares';
-                toggleIcon.classList.add('rotate-180');
-            } else {
-                conversionDirection = 'bs-to-currency';
-                toggleText.textContent = 'Bolívares a Divisa';
-                toggleIcon.classList.remove('rotate-180');
-            }
+        function init() {
+            // Simulated data for demonstration
+            const data = {
+                rates: {
+                    'USD': { value: 165.41, symbol: 'Bs', conversion: 165.41, displaySymbol: '$' },
+                    'EUR': { value: 194.74, symbol: 'Bs', conversion: 194.74, displaySymbol: '€' },
+                    'USDT': { value: 240.55, symbol: 'Bs', conversion: 240.55, displaySymbol: '₮' },
+                },
+                timestamp: Date.now()
+            };
+            
+            updateUIWithRates(data);
+            loadHistory();
             updateConversionInputPlaceholder();
-        }
-        
-        // Simula la verificación de una nueva versión del código
-        function checkNewVersion() {
-            // En un entorno real, harías una llamada fetch a un endpoint
-            // que devuelve la versión actual de tu app (ej: https://tudominio.com/version.json)
-            // Aquí lo simulamos con un valor estático
-            const newVersion = "202509191540"; // Esto simula una nueva versión de código
-            
-            console.log(`Versión actual: ${currentAppVersion}, Versión remota: ${newVersion}`);
-            
-            if (currentAppVersion && currentAppVersion !== newVersion) {
-                showUpdateMessage();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000); // Dar tiempo para que el usuario vea el mensaje
-            }
-        }
-        
-        // Inicia el chequeo de actualizaciones cada 30 segundos
-        function startUpdateCheckInterval() {
-            setInterval(checkNewVersion, 30000); // 30 segundos
         }
 
         // Event listeners
@@ -595,38 +529,19 @@
         document.getElementById('currency-display-select').addEventListener('change', (event) => {
             updateDisplay(event.target.value);
         });
-        document.getElementById('close-msg-box').addEventListener('click', () => {
-            hideMessage();
-        });
-        document.getElementById('conversion-toggle-btn').addEventListener('click', toggleConversionDirection);
         document.getElementById('currency-select').addEventListener('change', () => {
             updateConversionInputPlaceholder();
         });
 
-        // Lógica de inicio: carga las tasas manuales
-        async function init() {
-            // Simulamos un llamado a la API con un pequeño retraso
-            await new Promise(resolve => setTimeout(resolve, 500));
-
-            // En un entorno real, esta data vendría de un endpoint dinámico
-            const data = {
-                rates: {
-                    'USD': { value: 165.41, symbol: 'Bs', conversion: 165.41, displaySymbol: '$' },
-                    'EUR': { value: 194.74, symbol: 'Bs', conversion: 194.74, displaySymbol: '€' },
-                    'USDT': { value: 240.55, symbol: 'Bs', conversion: 240.55, displaySymbol: '₮' },
-                },
-                timestamp: Date.now(),
-                version: "202509191540"
-            };
-            
-            updateUIWithRates(data);
-            loadHistory();
-            updateConversionInputPlaceholder();
+        window.onclick = function(event) {
+            const settingsMenu = document.getElementById('settings-menu');
+            if (!event.target.closest('#settings-btn') && !event.target.closest('#settings-menu')) {
+                settingsMenu.style.display = 'none';
+            }
         }
 
         window.onload = () => {
             init();
-            startUpdateCheckInterval();
         };
     </script>
 </body>
