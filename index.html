@@ -14,10 +14,10 @@
             --text-color: #c9d1d9;
             --card-bg: #161b22;
             --border-color: #30363d;
-            --accent-color: #22C55E;
+            --accent-color: #4A4A4A;
             --secondary-text: #8b949e;
-            --gradient-start: #22C55E;
-            --gradient-end: #10B981;
+            --gradient-start: #4a4a4a;
+            --gradient-end: #2a2a2a;
         }
 
         body {
@@ -308,8 +308,27 @@
         let conversionDirection = 'currency-to-bs';
         const HISTORY_KEY = 'conversionHistory';
         let msgTimeout;
+        let refreshInterval;
 
-        // Functions for the settings menu
+        // COMIENZA LA CONFIGURACIÓN DE LAS TASAS FUTURAS
+        // Edita solo este bloque para cambiar las tasas y fechas futuras.
+        // Formato de fecha: 'dd//mm//aa' (Ej: '24//09//25')
+        const futureRates = {
+            USD: {
+                rate: 177.20,
+                date: '24//09//25'
+            },
+            EUR: {
+                rate: 185.50,
+                date: '24//09//25'
+            },
+            USDT: {
+                rate: 190.10,
+                date: '24//09//25'
+            }
+        };
+        // TERMINA LA CONFIGURACIÓN DE LAS TASAS FUTURAS
+
         const settingsBtn = document.getElementById('settings-btn');
         const settingsMenu = document.getElementById('settings-menu');
         const gearIcon = document.querySelector('.gear-icon');
@@ -392,13 +411,37 @@
 
         function updateUIWithRates(data) {
             rates = data.rates;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let futureRateApplied = false;
+            for (const currency in futureRates) {
+                const config = futureRates[currency];
+                const [day, month, year] = config.date.split('//').map(Number);
+                const futureDate = new Date(2000 + year, month - 1, day);
+                
+                if (today.getTime() >= futureDate.getTime()) {
+                    rates[currency].value = parseFloat(config.rate);
+                    futureRateApplied = true;
+                }
+            }
+
+            if (futureRateApplied) {
+                document.getElementById('update-text').textContent = `Tasa Futura Activa:`;
+                const todayFormatted = today.toLocaleDateString('es-VE');
+                document.getElementById('last-updated').textContent = `(${todayFormatted})`;
+            } else {
+                const formattedDate = new Intl.DateTimeFormat('es-VE', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                }).format(new Date(data.timestamp));
+                document.getElementById('last-updated').textContent = formattedDate;
+                document.getElementById('update-text').textContent = 'Última Actualización de la Tasa BCV:';
+            }
+
             updateDisplay(currentCurrency);
-            const formattedDate = new Intl.DateTimeFormat('es-VE', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            }).format(new Date(data.timestamp));
-            document.getElementById('last-updated').textContent = formattedDate;
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
             updateConversionInputPlaceholder();
@@ -406,14 +449,24 @@
         
         function updateDisplay(currency) {
             const rateInfo = rates[currency];
-            const updateTextElement = document.getElementById('update-text');
             const usdtNotice = document.getElementById('usdt-notice');
 
             if (currency === 'USDT') {
-                updateTextElement.textContent = 'Promedio del USDT en Venezuela:';
+                document.getElementById('update-text').textContent = 'Promedio del USDT en Venezuela:';
                 usdtNotice.classList.remove('hidden');
             } else {
-                updateTextElement.textContent = 'Última Actualización de la Tasa BCV:';
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const config = futureRates[currency];
+                if (config) {
+                    const [day, month, year] = config.date.split('//').map(Number);
+                    const futureDate = new Date(2000 + year, month - 1, day);
+                    if (today.getTime() >= futureDate.getTime()) {
+                        document.getElementById('update-text').textContent = 'Tasa Futura Activa:';
+                    } else {
+                        document.getElementById('update-text').textContent = 'Última Actualización de la Tasa BCV:';
+                    }
+                }
                 usdtNotice.classList.add('hidden');
             }
 
@@ -533,13 +586,8 @@
             showMessage("Conversión eliminada del historial.", 3000);
         }
 
-        function refreshPage() {
-            window.location.reload();
-        }
-
-        function init() {
-            // Simulated data for demonstration
-            const data = {
+        function initRates() {
+             const data = {
                 rates: {
                     'USD': { value: 165.41, symbol: 'Bs', conversion: 165.41, displaySymbol: '$' },
                     'EUR': { value: 194.74, symbol: 'Bs', conversion: 194.74, displaySymbol: '€' },
@@ -547,17 +595,15 @@
                 },
                 timestamp: Date.now()
             };
-            
             updateUIWithRates(data);
-            loadHistory();
-            updateConversionInputPlaceholder();
         }
 
         // Event listeners
         document.getElementById('convert-btn').addEventListener('click', convertCurrency);
         document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
         document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
-        document.getElementById('refresh-btn').addEventListener('click', refreshPage);
+        // Change the button to reload the page completely
+        document.getElementById('refresh-btn').addEventListener('click', () => window.location.reload());
         document.getElementById('currency-display-select').addEventListener('change', (event) => {
             updateDisplay(event.target.value);
         });
@@ -575,9 +621,30 @@
                 gearIcon.classList.remove('active');
             }
         }
+        
+        // Auto-refresh logic based on Page Visibility API
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                // If the tab is in the background, start the auto-refresh
+                if (!refreshInterval) {
+                    refreshInterval = setInterval(() => {
+                        initRates();
+                    }, 20000); // Refresh every 20 seconds
+                }
+            } else {
+                // If the tab is in the foreground, stop the auto-refresh
+                if (refreshInterval) {
+                    clearInterval(refreshInterval);
+                    refreshInterval = null;
+                }
+            }
+        }
+        document.addEventListener("visibilitychange", handleVisibilityChange);
 
         window.onload = () => {
-            init();
+            initRates();
+            loadHistory();
+            updateConversionInputPlaceholder();
         };
     </script>
 </body>
