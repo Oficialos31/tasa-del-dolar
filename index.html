@@ -14,38 +14,36 @@
             --text-color: #c9d1d9;
             --card-bg: #161b22;
             --border-color: #30363d;
-            --accent-color: #4A4A4A;
+            --accent-color: #10B981; /* Verde esmeralda (Green-400) */
             --secondary-text: #8b949e;
-            --gradient-start: #4a4a4a;
-            --gradient-end: #2a2a2a;
+            --gradient-start: #10B981;
+            --gradient-end: #059669;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--card-bg);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             min-height: 100vh;
             padding: 0;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        .bg-gray-800 { background-color: var(--card-bg); }
+        .card { background-color: var(--card-bg); }
         .border-gray-700 { border-color: var(--border-color); }
         .text-green-400 { color: var(--accent-color); }
         .text-gray-400 { color: var(--secondary-text); }
-        .text-gray-500 { color: var(--secondary-text); }
-        .text-gray-600 { color: var(--secondary-text); }
-        .bg-gray-700 { background-color: var(--border-color); }
-
+        
         /* General element colors for both themes */
         .gradient-button {
             background-image: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2); /* Sombra con color de acento */
             transition: all 0.3s ease;
         }
 
         .gradient-button:hover {
             background-image: linear-gradient(to right, var(--gradient-end), var(--gradient-start));
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
             transform: translateY(-2px);
         }
 
@@ -72,6 +70,17 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* Animación para el efecto "Actualización Brillante" */
+        @keyframes flash-rate {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            50% { box-shadow: 0 0 10px 5px rgba(16, 185, 129, 0.4); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .rate-flash {
+            animation: flash-rate 0.8s ease-out;
         }
 
         .ad-container {
@@ -145,8 +154,8 @@
             left: 50%;
             transform: translateX(-50%); 
             padding: 1rem 2rem;
-            background-color: #1c2630;
-            color: #c9d1d9;
+            background-color: var(--card-bg);
+            color: var(--text-color);
             border-radius: 0.5rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
             z-index: 1000;
@@ -187,7 +196,7 @@
             </svg>
         </button>
         <!-- Menú de configuración -->
-        <div id="settings-menu" class="rounded-xl p-4 flex flex-col space-y-4">
+        <div id="settings-menu" class="card rounded-xl p-4 flex flex-col space-y-4">
             <button id="show-time-btn" class="config-button">
                 Ver Hora
             </button>
@@ -206,6 +215,7 @@
     <main class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section">
         <div class="flex items-center justify-center space-x-2 w-full mb-4">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
+                <!-- Icono de Divisa (Mantengo el diseño original para el logo) -->
                 <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M12 5.5V18.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -216,11 +226,12 @@
         
         <div class="animated-bar w-full h-1 rounded-full mb-6"></div>
 
+        <!-- ÍCONOS REALES: Selectores actualizados con emojis de bandera -->
         <div class="flex justify-center mb-6">
             <select id="currency-display-select" class="currency-select w-full">
-                <option value="USD">Tasa USD</option>
-                <option value="EUR">Tasa Euro</option>
-                <option value="USDT">Tasa USDT</option>
+                <option value="USD">🇺🇸 Dólar (USD)</option>
+                <option value="EUR">🇪🇺 Euro (EUR)</option>
+                <option value="USDT">₮ USDT (Tether)</option>
             </select>
         </div>
 
@@ -230,11 +241,12 @@
         </div>
         
         <div id="rate-display" class="hidden">
-            <div class="bg-gray-700 p-4 rounded-lg mb-4 w-full">
+            <div class="card p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-400">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
+                    <!-- El efecto de "Actualización Brillante" se activa con la clase 'rate-flash' en JS -->
                     <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
-                    <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
+                    <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors" title="Copiar Tasa">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2A2 2 0 0114 5m-5 8h4m-4 4h4" />
                         </svg>
@@ -242,13 +254,19 @@
                 </div>
             </div>
             
-            <div id="usdt-notice" class="bg-gray-700 p-4 rounded-xl text-sm text-gray-400 hidden">
-                <p>El valor del USDT es un promedio del mercado P2P. Puede variar.</p>
+            <!-- FUENTE DE DATOS VISIBLE -->
+            <div id="source-label" class="text-sm text-gray-500 mt-2 mb-4">
+                <p id="source-text" class="font-semibold"></p>
+            </div>
+            
+            <!-- DISCLAIMER DE USDT: Más prominente y bien ubicado -->
+            <div id="usdt-notice" class="card p-3 rounded-xl text-sm text-red-400 border border-red-500 hidden">
+                <p>⚠️ **ATENCIÓN:** Tasa USDT basada en promedio P2P. Valor altamente referencial, no oficial. ¡Opera con cautela!</p>
             </div>
 
             <div class="text-sm text-gray-500 mt-4 flex flex-col items-center">
-                <p id="update-text">Última Actualización de la Tasa BCV:</p>
-                <p><span id="last-updated">Cargando...</span></p>
+                <!-- TEXTO ACTUALIZADO: "Fecha Actual:" -->
+                <p><span id="last-updated-label">Fecha Actual:</span> <span id="last-updated" class="font-bold">Cargando...</span></p>
             </div>
         </div>
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
@@ -261,7 +279,7 @@
             <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
             
             <div class="flex justify-center mb-4">
-                <button id="conversion-toggle-btn" class="conversion-toggle-btn w-full text-white flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                <button id="conversion-toggle-btn" class="w-full text-white card flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none transition-colors border border-gray-700 hover:border-green-400">
                     <span id="toggle-text">Divisa a Bolívares</span>
                     <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -272,9 +290,10 @@
             <div class="flex flex-col space-y-4 mb-4 items-center justify-center">
                 <input type="number" id="amount-input" class="converter-input w-full p-3" placeholder="Cantidad a convertir">
                 <select id="currency-select" class="converter-input w-full p-3">
-                    <option value="USD">Dólares (USD)</option>
-                    <option value="EUR">Euros (EUR)</option>
-                    <option value="USDT">USDT (Tether)</option>
+                    <!-- ÍCONOS REALES: Selectores de conversión con emojis de bandera -->
+                    <option value="USD">🇺🇸 Dólares (USD)</option>
+                    <option value="EUR">🇪🇺 Euros (EUR)</option>
+                    <option value="USDT">₮ USDT (Tether)</option>
                 </select>
             </div>
             
@@ -282,7 +301,7 @@
                 Convertir
             </button>
             
-            <div id="conversion-result" class="mt-4 p-4 bg-gray-700 rounded-lg hidden">
+            <div id="conversion-result" class="mt-4 p-4 card rounded-lg hidden">
                 <div id="converted-value" class="text-3xl font-bold text-green-400 mb-2"></div>
             </div>
         </div>
@@ -309,29 +328,12 @@
         const HISTORY_KEY = 'conversionHistory';
         let msgTimeout;
         let refreshInterval;
-
-        // COMIENZA LA CONFIGURACIÓN DE LAS TASAS FUTURAS
-        // Edita solo este bloque para cambiar las tasas y fechas futuras.
-        // Formato de fecha: 'dd//mm//aa' (Ej: '24//09//25')
-        const futureRates = {
-            USD: {
-                rate: 166.58,
-                date: '22//09//25'
-            },
-            EUR: {
-                rate: 195.67,
-                date: '22//09//25'
-            },
-            USDT: {
-                rate: 242.24,
-                date: '22//09//25'
-            }
-        };
-        // TERMINA LA CONFIGURACIÓN DE LAS TASAS FUTURAS
-
+        
         const settingsBtn = document.getElementById('settings-btn');
         const settingsMenu = document.getElementById('settings-menu');
         const gearIcon = document.querySelector('.gear-icon');
+        const currencyRateElement = document.getElementById('currency-rate');
+
 
         settingsBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -395,84 +397,81 @@
         }
         
         function copyToClipboard() {
-            const rateElement = document.getElementById('currency-rate');
-            const rateText = rateElement.textContent.trim();
-            const copyMessage = `Este es la Tasa del ${currentCurrency} (${rateText}) confirmada por el BCV reflejada en Tasa VE.`;
+            // Se actualiza para copiar SOLO el número de la tasa (sin el símbolo Bs)
+            const rateText = currencyRateElement.textContent.trim().split(' ')[1]; 
             
             const tempInput = document.createElement('textarea');
-            tempInput.value = copyMessage;
+            tempInput.value = rateText; // Copia solo el valor
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');
             document.body.removeChild(tempInput);
 
-            showMessage("¡Tasa copiada al portapapeles!", 3000);
+            showMessage(`¡Valor de la Tasa (${rateText}) copiado!`, 3000);
         }
 
-        function updateUIWithRates(data) {
+        /**
+         * Aplica la animación de flash al número de la tasa
+         */
+        function applyFlashEffect() {
+            currencyRateElement.classList.remove('rate-flash');
+            // Forzar un reflow para que la animación se reinicie
+            void currencyRateElement.offsetWidth; 
+            currencyRateElement.classList.add('rate-flash');
+            // Quitar la clase después de que termine la animación (800ms)
+            setTimeout(() => {
+                currencyRateElement.classList.remove('rate-flash');
+            }, 800);
+        }
+
+        function updateUIWithRates(data, isUpdate) {
             rates = data.rates;
             
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const formattedDate = new Intl.DateTimeFormat('es-VE', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(new Date(data.timestamp));
+
+            document.getElementById('last-updated').textContent = formattedDate;
+            // TEXTO ACTUALIZADO: "Fecha Actual:"
+            document.getElementById('last-updated-label').textContent = 'Fecha Actual:';
             
-            let futureRateApplied = false;
-            for (const currency in futureRates) {
-                const config = futureRates[currency];
-                const [day, month, year] = config.date.split('//').map(Number);
-                const futureDate = new Date(2000 + year, month - 1, day);
-                
-                if (today.getTime() >= futureDate.getTime()) {
-                    rates[currency].value = parseFloat(config.rate);
-                    futureRateApplied = true;
-                }
-            }
-
-            if (futureRateApplied) {
-                document.getElementById('update-text').textContent = `Tasa Futura Activa:`;
-                const todayFormatted = today.toLocaleDateString('es-VE');
-                document.getElementById('last-updated').textContent = `(${todayFormatted})`;
-            } else {
-                const formattedDate = new Intl.DateTimeFormat('es-VE', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                }).format(new Date(data.timestamp));
-                document.getElementById('last-updated').textContent = formattedDate;
-                document.getElementById('update-text').textContent = 'Última Actualización de la Tasa BCV:';
-            }
-
-            updateDisplay(currentCurrency);
+            updateDisplay(currentCurrency, isUpdate); 
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
             updateConversionInputPlaceholder();
         }
         
-        function updateDisplay(currency) {
+        function updateDisplay(currency, isUpdate = false) {
             const rateInfo = rates[currency];
             const usdtNotice = document.getElementById('usdt-notice');
+            const sourceTextElement = document.getElementById('source-text');
+            
+            currentCurrency = currency;
 
             if (currency === 'USDT') {
-                document.getElementById('update-text').textContent = 'Promedio del USDT en Venezuela:';
+                sourceTextElement.textContent = 'Fuente: Promedio P2P de Cripto-Exchanges';
                 usdtNotice.classList.remove('hidden');
             } else {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const config = futureRates[currency];
-                if (config) {
-                    const [day, month, year] = config.date.split('//').map(Number);
-                    const futureDate = new Date(2000 + year, month - 1, day);
-                    if (today.getTime() >= futureDate.getTime()) {
-                        document.getElementById('update-text').textContent = 'Tasa Futura Activa:';
-                    } else {
-                        document.getElementById('update-text').textContent = 'Última Actualización de la Tasa BCV:';
-                    }
-                }
+                sourceTextElement.textContent = 'Fuente: Banco Central de Venezuela (BCV)';
                 usdtNotice.classList.add('hidden');
             }
 
             if (rateInfo) {
-                document.getElementById('currency-rate').textContent = `${rateInfo.symbol} ${rateInfo.value}`;
-                currentCurrency = currency;
+                // Formatear el número para usar punto como separador decimal y asegurar 2 decimales
+                const formattedRate = rateInfo.value.toLocaleString('en-US', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                });
+
+                currencyRateElement.textContent = `${rateInfo.symbol} ${formattedRate}`;
+                
+                // Activar el efecto de flash solo si es una actualización o carga inicial
+                if (isUpdate) {
+                    applyFlashEffect();
+                }
+                
                 document.getElementById('currency-select').value = currency;
             }
         }
@@ -482,11 +481,13 @@
             const currencySelect = document.getElementById('currency-select');
             const selectedCurrency = currencySelect.value;
             const rateInfo = rates[selectedCurrency];
+            
+            const currencyLabel = currencySelect.options[currencySelect.selectedIndex].text.split(' ')[0]; // Obtiene el emoji/símbolo para el placeholder
 
             if (conversionDirection === 'bs-to-currency') {
-                amountInput.placeholder = 'Cantidad en Bolívares';
+                amountInput.placeholder = 'Cantidad en Bolívares (Bs)';
             } else {
-                amountInput.placeholder = `Cantidad en ${selectedCurrency} (${rateInfo.displaySymbol})`;
+                amountInput.placeholder = `Cantidad en ${currencyLabel} (${rateInfo.displaySymbol})`;
             }
         }
 
@@ -513,21 +514,27 @@
             let fromCurrency, toCurrency, fromSymbol, toSymbol;
 
             if (conversionDirection === 'bs-to-currency') {
-                convertedValue = (amount / rateInfo.value).toFixed(2);
+                convertedValue = (amount / rateInfo.value);
                 fromCurrency = 'Bolívares';
                 toCurrency = currency;
                 fromSymbol = 'Bs';
                 toSymbol = rateInfo.displaySymbol;
             } else {
-                convertedValue = (amount * rateInfo.value).toFixed(2);
+                convertedValue = (amount * rateInfo.value);
                 fromCurrency = currency;
                 toCurrency = 'Bolívares';
                 fromSymbol = rateInfo.displaySymbol;
                 toSymbol = 'Bs';
             }
             
-            convertedValueDiv.textContent = `${toSymbol} ${convertedValue}`;
-            saveConversionToHistory(amount, fromCurrency, toCurrency, convertedValue, fromSymbol, toSymbol);
+            // Formatear el resultado de la conversión para usar punto como separador decimal
+            const formattedConvertedValue = convertedValue.toLocaleString('en-US', { 
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2 
+            });
+
+            convertedValueDiv.textContent = `${toSymbol} ${formattedConvertedValue}`;
+            saveConversionToHistory(amount, fromCurrency, toCurrency, formattedConvertedValue, fromSymbol, toSymbol);
             conversionResultDiv.classList.remove('hidden');
         }
         
@@ -551,10 +558,10 @@
             } else {
                 history.forEach((item, index) => {
                     const listItem = document.createElement('li');
-                    listItem.classList.add('bg-gray-700', 'p-3', 'rounded-lg', 'history-item');
+                    listItem.classList.add('card', 'p-3', 'rounded-lg', 'history-item', 'border', 'border-gray-700');
                     listItem.innerHTML = `
                         <div>
-                            <p class="text-sm"><span class="font-bold">${item.amount} ${item.fromCurrency}</span> a <span class="text-green-400 font-bold">${item.result} ${item.toCurrency}</span></p>
+                            <p class="text-sm"><span class="font-bold">${item.amount.toLocaleString('en-US')} ${item.fromSymbol}</span> a <span class="text-green-400 font-bold">${item.result} ${item.toSymbol}</span></p>
                             <p class="text-xs text-gray-500">${item.timestamp}</p>
                         </div>
                         <button class="delete-history-item" data-index="${index}">
@@ -586,26 +593,35 @@
             showMessage("Conversión eliminada del historial.", 3000);
         }
 
-        function initRates() {
+        /**
+         * Simula la carga de tasas (aquí iría la llamada a la API en el futuro)
+         */
+        function initRates(isManualUpdate = false) {
              const data = {
                 rates: {
-                    'USD': { value: 207.21, symbol: 'Bs', conversion: 207.21, displaySymbol: '$' },
+                    // Simulación de tasas actualizadas
+                    'USD': { value: 207.89, symbol: 'Bs', conversion: 207.89, displaySymbol: '$' },
                     'EUR': { value: 242.21, symbol: 'Bs', conversion: 242.21, displaySymbol: '€' },
-                    'USDT': { value: 307.45, symbol: 'Bs', conversion: 307.45, displaySymbol: '₮' },
+                    'USDT': { value: 309.40, symbol: 'Bs', conversion: 309.40, displaySymbol: '₮' },
                 },
                 timestamp: Date.now()
             };
-            updateUIWithRates(data);
+            updateUIWithRates(data, isManualUpdate);
         }
-
+        
         // Event listeners
         document.getElementById('convert-btn').addEventListener('click', convertCurrency);
         document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
         document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
-        // Change the button to reload the page completely
-        document.getElementById('refresh-btn').addEventListener('click', () => window.location.reload());
+        
+        // MODIFICACIÓN CRÍTICA: El botón ahora recarga la página completamente.
+        document.getElementById('refresh-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.reload(); 
+        });
+
         document.getElementById('currency-display-select').addEventListener('change', (event) => {
-            updateDisplay(event.target.value);
+            updateDisplay(event.target.value, true); // Flash cuando se cambia la divisa
         });
         document.getElementById('currency-select').addEventListener('change', () => {
             updateConversionInputPlaceholder();
@@ -622,17 +638,17 @@
             }
         }
         
-        // Auto-refresh logic based on Page Visibility API
         function handleVisibilityChange() {
             if (document.hidden) {
-                // If the tab is in the background, start the auto-refresh
+                // Si la pestaña está en segundo plano, inicia la auto-actualización
                 if (!refreshInterval) {
                     refreshInterval = setInterval(() => {
+                        // En un app real, aquí se llamaría a la API sin recargar toda la página.
                         initRates();
-                    }, 20000); // Refresh every 20 seconds
+                    }, 20000); 
                 }
             } else {
-                // If the tab is in the foreground, stop the auto-refresh
+                // Si la pestaña está en primer plano, detiene la auto-actualización
                 if (refreshInterval) {
                     clearInterval(refreshInterval);
                     refreshInterval = null;
@@ -642,12 +658,10 @@
         document.addEventListener("visibilitychange", handleVisibilityChange);
 
         window.onload = () => {
-            initRates();
+            initRates(true); // Activar flash en la carga inicial
             loadHistory();
             updateConversionInputPlaceholder();
         };
     </script>
 </body>
 </html>
-
-
