@@ -28,12 +28,24 @@
             color: var(--text-color);
             min-height: 100vh;
             padding: 0;
+            margin: 0; /* Asegura que no haya margen por defecto */
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
+        /* Estilo para el contenedor principal para adaptabilidad */
+        .main-container {
+            width: 100%; 
+            max-width: 600px; /* Límite para legibilidad en escritorio */
+            margin-left: auto;
+            margin-right: auto;
+            min-height: 100vh;
+            padding: 1.5rem; /* p-6 */
+        }
+
         .card { 
             background-color: var(--card-bg); 
             border: 1px solid var(--border-color); /* Bordes en tarjetas */
+            border-radius: 0.5rem; /* rounded-lg */
         }
 
         .text-green-400 { color: var(--accent-color); }
@@ -60,6 +72,7 @@
             padding: 0.75rem 1rem;
             border: 1px solid var(--border-color);
             transition: all 0.2s ease-in-out;
+            width: 100%; /* Asegura que los inputs ocupen todo el ancho disponible */
         }
         
         .currency-select:focus, .converter-input:focus { border-color: var(--accent-color); outline: none; }
@@ -182,6 +195,20 @@
         .ad-text-content { flex-grow: 1; text-align: left; padding-left: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .ad-action-btn { flex-shrink: 0; background-color: #1D4ED8; color: white; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; transition: background-color 0.2s; }
         .ad-action-btn:hover { background-color: #2563EB; }
+        
+        /* Ajuste para que la lista de historial sea responsive */
+        .history-list-item-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .history-list-item-content {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
 
     </style>
 </head>
@@ -208,12 +235,13 @@
                 Reiniciar App
             </button>
             <div class="text-center text-sm text-gray-500 pt-2">
-                Versión: <span id="app-version">1.1</span>
+                Versión: <span id="app-version">1.2</span>
             </div>
         </div>
     </div>
 
-    <main class="w-full h-full max-w-lg mx-auto min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section">
+    <!-- Contenedor Principal (Ahora Responsive) -->
+    <main class="main-container text-center flex flex-col justify-start">
         <div class="flex items-center justify-center space-x-2 w-full mb-4">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
                 <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -261,13 +289,13 @@
         </button>
         
         <!-- Selectores -->
-        <div class="flex justify-center mt-4 space-x-2">
-            <select id="currency-display-select" class="currency-select w-1/2">
+        <div class="flex flex-col sm:flex-row justify-center mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
+            <select id="currency-display-select" class="currency-select w-full sm:w-1/2">
                 <option value="USD">🇺🇸 Dólar (USD)</option>
                 <option value="EUR">🇪🇺 Euro (EUR)</option>
                 <option value="USDT">₮ USDT (Tether)</option>
             </select>
-             <button id="conversion-toggle-btn" class="w-1/2 text-white card flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none transition-colors border border-gray-700 hover:border-green-400">
+             <button id="conversion-toggle-btn" class="w-full sm:w-1/2 text-white card flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none transition-colors border border-gray-700 hover:border-green-400">
                 <span id="toggle-text">Divisa a Bolívares</span>
                 <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -709,48 +737,50 @@
 
             history.forEach((item, index) => {
                 const listItem = document.createElement('li');
-                listItem.classList.add('card', 'p-3', 'rounded-lg', 'flex-col', 'sm:flex-row', 'items-start', 'sm:items-center', 'justify-between');
+                listItem.classList.add('card', 'p-3', 'flex', 'items-center', 'justify-between');
                 listItem.id = `history-item-${index}`; // ID para facilitar la edición
 
                 const displayAmount = item.expression ? item.expression : item.amount.toLocaleString('en-US');
 
                 listItem.innerHTML = `
-                    <!-- Columna de Conversión y Fecha -->
-                    <div class="flex-1 w-full sm:w-auto min-w-0">
-                        <p class="text-base">
-                            <span class="font-bold">${displayAmount} ${item.fromSymbol}</span> a 
-                            <span class="text-green-400 font-bold">${item.result} ${item.toSymbol}</span>
-                        </p>
-                        <p class="text-xs text-gray-500 mb-2 sm:mb-0">${item.timestamp}</p>
-                    </div>
-
-                    <!-- Columna de Etiqueta y Botón de Eliminación -->
-                    <div class="flex items-center space-x-2 w-full sm:w-auto mt-2 sm:mt-0 ml-0 sm:ml-4 flex-shrink-0">
-                        
-                        <!-- Modo de Visualización -->
-                        <div class="label-display-div flex items-center space-x-2 flex-grow min-w-[120px]">
-                            <p class="text-sm italic text-gray-400 label-display truncate max-w-[150px]">${item.label || 'Añadir etiqueta'}</p>
-                            <button class="edit-label-btn text-gray-500 hover:text-green-400 transition-colors flex-shrink-0" data-index="${index}" title="Editar Etiqueta">
-                                <i class="fas fa-pencil-alt text-xs"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Modo de Edición (Oculto) -->
-                        <div class="label-edit-div hidden flex items-center space-x-1 flex-grow min-w-[120px]">
-                            <input type="text" maxlength="30" value="${item.label || ''}" 
-                                class="history-label-input w-full" placeholder="Etiqueta (máx 30)">
-                            <button class="save-label-btn text-green-400 hover:text-white p-1" data-index="${index}" title="Guardar">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="cancel-label-btn text-red-400 hover:text-white p-1" data-index="${index}" title="Cancelar">
-                                <i class="fas fa-times"></i>
-                            </button>
+                    <div class="history-list-item-content">
+                        <!-- Columna de Conversión y Fecha -->
+                        <div class="flex-1 min-w-0 pr-4">
+                            <p class="text-base break-words">
+                                <span class="font-bold">${displayAmount} ${item.fromSymbol}</span> a 
+                                <span class="text-green-400 font-bold">${item.result} ${item.toSymbol}</span>
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">${item.timestamp}</p>
                         </div>
 
-                        <!-- Botón de Eliminación -->
-                        <button class="delete-history-item ml-4" data-index="${index}" title="Eliminar Conversión">
-                            &times;
-                        </button>
+                        <!-- Columna de Etiqueta y Botón de Eliminación -->
+                        <div class="flex items-center space-x-2 mt-2 sm:mt-0 flex-shrink-0 min-w-[120px]">
+                            
+                            <!-- Modo de Visualización -->
+                            <div class="label-display-div flex items-center space-x-2 flex-grow">
+                                <p class="text-sm italic text-gray-400 label-display truncate max-w-[150px]">${item.label || 'Añadir etiqueta'}</p>
+                                <button class="edit-label-btn text-gray-500 hover:text-green-400 transition-colors flex-shrink-0" data-index="${index}" title="Editar Etiqueta">
+                                    <i class="fas fa-pencil-alt text-xs"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Modo de Edición (Oculto) -->
+                            <div class="label-edit-div hidden flex items-center space-x-1 flex-grow">
+                                <input type="text" maxlength="30" value="${item.label || ''}" 
+                                    class="history-label-input w-full" placeholder="Etiqueta (máx 30)">
+                                <button class="save-label-btn text-green-400 hover:text-white p-1" data-index="${index}" title="Guardar">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="cancel-label-btn text-red-400 hover:text-white p-1" data-index="${index}" title="Cancelar">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <!-- Botón de Eliminación -->
+                            <button class="delete-history-item ml-4" data-index="${index}" title="Eliminar Conversión">
+                                &times;
+                            </button>
+                        </div>
                     </div>
                 `;
                 historyList.appendChild(listItem);
