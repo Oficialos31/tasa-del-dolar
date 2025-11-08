@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tasa VE - tasave3.0</title>
+    <title>Tasa VE - Conversor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -246,6 +246,7 @@
             <div class="card p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-400">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
+                    <!-- Tasa mostrada con el formato de Bolívares (punto miles, coma decimal) -->
                     <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
                     <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors" title="Copiar Tasa">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -440,7 +441,11 @@
             // Extrae solo el valor numérico (la tasa)
             const rateText = currencyRateElement.textContent.trim().split(' ')[1]; 
             const tempInput = document.createElement('textarea');
-            tempInput.value = rateText; 
+            // La función toLocaleString('es-VE') usa la coma decimal, pero al copiar al portapapeles es mejor 
+            // usar el punto decimal para compatibilidad con sistemas y hojas de cálculo.
+            const valueToCopy = rateText.replace(/\./g, '').replace(/,/g, '.');
+
+            tempInput.value = valueToCopy; 
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');
@@ -490,8 +495,8 @@
             // 1. Preparar el texto de Tasa USADA (SIMPLIFICADO) - Se mantiene para el timestamp
             let rateUsedText = '';
             if (item.rateUsed) {
-                // Formateamos la tasa utilizada
-                const storedRate = parseFloat(item.rateUsed).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                // Formateamos la tasa utilizada con formato ES-VE
+                const storedRate = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 
                 // Formato simplificado: Tasa USADA: Bs [Rate]
                 rateUsedText = `
@@ -502,7 +507,8 @@
             }
 
             // 2. Determinar la etiqueta de la tasa (Tasa USD, EUR, USDT) para el detalle
-            const rateUsedFormatted = parseFloat(item.rateUsed).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            // Formateamos la tasa utilizada con formato ES-VE
+            const rateUsedFormatted = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             let rateTypeLabel = 'Tasa de Cambio';
             if (item.rateCurrencySymbol === '$') rateTypeLabel = 'Tasa USD';
             else if (item.rateCurrencySymbol === '€') rateTypeLabel = 'Tasa EUR';
@@ -659,7 +665,8 @@
                 toSymbol = 'Bs';
             }
             
-            const formattedConvertedValue = convertedValue.toLocaleString('en-US', { 
+            // *** APLICACIÓN DEL FORMATO ES-VE (PUNTO MILES, COMA DECIMAL) ***
+            const formattedConvertedValue = convertedValue.toLocaleString('es-VE', { 
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2 
             });
@@ -797,7 +804,8 @@
             }
 
             if (rateInfo) {
-                const formattedRate = rateInfo.value.toLocaleString('en-US', { 
+                // *** APLICACIÓN DEL FORMATO ES-VE (PUNTO MILES, COMA DECIMAL) ***
+                const formattedRate = rateInfo.value.toLocaleString('es-VE', { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
                 });
@@ -830,7 +838,7 @@
         function initRates(isManualUpdate = false) {
              const data = {
                  rates: {
-                     // *** TASAS ACTUALIZADAS SOLICITADAS ***
+                     // Las tasas son datos de ejemplo
                      'USD': { value: 231.04, symbol: 'Bs', conversion: 231.04, displaySymbol: '$' }, 
                      'EUR': { value: 267.63, symbol: 'Bs', conversion: 267.63, displaySymbol: '€' },
                      'USDT': { value: 394.59, symbol: 'Bs', conversion: 394.59, displaySymbol: '₮' },
@@ -896,7 +904,7 @@
         });
 
         window.onload = () => {
-            initRates(true); 
+            initRates(false); 
             loadHistory();
             updateConversionInputPlaceholder();
         };
