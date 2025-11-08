@@ -246,7 +246,7 @@
             <div class="card p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-400">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
-                    <!-- Tasa mostrada con el formato de Bolívares (punto miles, coma decimal) -->
+                    <!-- Tasa mostrada con el formato modificado: punto decimal -->
                     <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
                     <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors" title="Copiar Tasa">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -441,9 +441,9 @@
             // Extrae solo el valor numérico (la tasa)
             const rateText = currencyRateElement.textContent.trim().split(' ')[1]; 
             const tempInput = document.createElement('textarea');
-            // La función toLocaleString('es-VE') usa la coma decimal, pero al copiar al portapapeles es mejor 
-            // usar el punto decimal para compatibilidad con sistemas y hojas de cálculo.
-            const valueToCopy = rateText.replace(/\./g, '').replace(/,/g, '.');
+            // La tasa mostrada ahora usa punto decimal, así que la copiamos tal cual.
+            // Reemplazamos las comas por nada, en caso de miles (formato en-US: 1,000.00)
+            const valueToCopy = rateText.replace(/,/g, ''); 
 
             tempInput.value = valueToCopy; 
             document.body.appendChild(tempInput);
@@ -495,7 +495,7 @@
             // 1. Preparar el texto de Tasa USADA (SIMPLIFICADO) - Se mantiene para el timestamp
             let rateUsedText = '';
             if (item.rateUsed) {
-                // Formateamos la tasa utilizada con formato ES-VE
+                // Formateamos la tasa utilizada con formato ES-VE (punto miles, coma decimal)
                 const storedRate = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 
                 // Formato simplificado: Tasa USADA: Bs [Rate]
@@ -507,7 +507,7 @@
             }
 
             // 2. Determinar la etiqueta de la tasa (Tasa USD, EUR, USDT) para el detalle
-            // Formateamos la tasa utilizada con formato ES-VE
+            // Formateamos la tasa utilizada con formato ES-VE (punto miles, coma decimal)
             const rateUsedFormatted = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             let rateTypeLabel = 'Tasa de Cambio';
             if (item.rateCurrencySymbol === '$') rateTypeLabel = 'Tasa USD';
@@ -665,7 +665,7 @@
                 toSymbol = 'Bs';
             }
             
-            // *** APLICACIÓN DEL FORMATO ES-VE (PUNTO MILES, COMA DECIMAL) ***
+            // *** Mantenemos el formato ES-VE (PUNTO MILES, COMA DECIMAL) para el resultado de la transacción en Bs ***
             const formattedConvertedValue = convertedValue.toLocaleString('es-VE', { 
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2 
@@ -804,8 +804,8 @@
             }
 
             if (rateInfo) {
-                // *** APLICACIÓN DEL FORMATO ES-VE (PUNTO MILES, COMA DECIMAL) ***
-                const formattedRate = rateInfo.value.toLocaleString('es-VE', { 
+                // *** CAMBIO CRUCIAL: Usamos 'en-US' para que el decimal sea el PUNTO (ej: 231.04) ***
+                const formattedRate = rateInfo.value.toLocaleString('en-US', { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
                 });
