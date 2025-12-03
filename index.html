@@ -182,6 +182,20 @@
             font-family: monospace;
             min-height: 100px; /* Altura mínima para la etiqueta */
         }
+
+        /* Estilo para el icono de dispositivo */
+        .device-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            color: var(--secondary-text);
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
     </style>
 </head>
 <body class="theme-dark">
@@ -197,23 +211,27 @@
         </button>
         <!-- Menú de configuración -->
         <div id="settings-menu" class="card rounded-xl p-4 flex flex-col space-y-4">
+            <!-- BOTÓN AÑADIDO: Tasa Personalizada -->
+            <button id="add-custom-rate-btn" class="config-button text-green-400 font-semibold border border-gray-700 hover:border-green-400">
+                Añadir Tasa Personalizada
+            </button>
             <button id="show-time-btn" class="config-button">
                 Ver Hora
             </button>
             <button id="clear-history-btn" class="config-button text-red-400">
                 Limpiar Historial
             </button>
+            <!-- El botón refrescar del menú también recargará la página -->
             <button id="refresh-page-btn" class="config-button">
                 Refrescar
             </button>
             <div class="text-center text-sm text-gray-500 pt-2">
-                Versión: <span id="app-version">3.0</span>
+                Versión: <span id="app-version">3.2</span>
             </div>
         </div>
     </div>
 
     <!-- INICIO DE LA MODIFICACIÓN DE ADAPTABILIDAD -->
-    <!-- Se agregaron clases: md:max-w-xl lg:max-w-2xl para que se vea más grande en pantallas de escritorio -->
     <main class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
         <div class="flex items-center justify-center space-x-2 w-full mb-4">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
@@ -221,6 +239,11 @@
                 <path d="M12 5.5V18.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <h1 class="text-3xl font-bold text-green-400">Tasa VE</h1>
+            
+            <!-- NUEVO: Indicador de Dispositivo -->
+            <div id="device-icon" class="device-indicator hidden" title="Dispositivo Detectado">
+                <!-- El icono se insertará vía JS -->
+            </div>
         </div>
         <!-- FIN DE LA MODIFICACIÓN DE ADAPTABILIDAD -->
         
@@ -231,22 +254,20 @@
         <!-- Selectores de Divisa -->
         <div class="flex justify-center mb-6">
             <select id="currency-display-select" class="currency-select w-full">
-                <option value="USD">🇺🇸 Dólar (USD)</option>
-                <option value="EUR">🇪🇺 Euro (EUR)</option>
-                <option value="USDT">₮ USDT (Tether)</option>
+                <!-- Opciones generadas dinámicamente -->
             </select>
         </div>
 
         <div id="loading" class="flex items-center justify-center space-x-2 text-gray-500 text-lg mb-4">
             <div class="spinner"></div>
-            <span>Cargando tasa...</span>
+            <span>Buscando tasa...</span>
         </div>
         
         <div id="rate-display" class="hidden">
             <div class="card p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-400">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
-                    <!-- Tasa mostrada con el punto decimal -->
+                    <!-- MODIFICACIÓN: Mostrar siempre Bs [Monto] -->
                     <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
                     <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors" title="Copiar Tasa">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -266,14 +287,20 @@
                 <p>⚠️ **ATENCIÓN:** Tasa USDT basada en promedio P2P. Valor altamente referencial, no oficial. ¡Opera con cautela!</p>
             </div>
 
+            <!-- DISCLAIMER DE PERSONALIZADA: Se muestra cuando es una tasa custom -->
+            <div id="custom-notice" class="card p-3 rounded-xl text-sm text-blue-400 border border-blue-500 hidden">
+                <p>🔧 Tasa Personalizada por el usuario.</p>
+            </div>
+
             <div class="text-sm text-gray-500 mt-4 flex flex-col items-center">
                 <p><span id="last-updated-label">Fecha Actual:</span> <span id="last-updated" class="font-bold">Cargando...</span></p>
             </div>
         </div>
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
 
+        <!-- MODIFICACIÓN: Botón ahora recarga la página -->
         <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-3 px-4 rounded-xl gradient-button pulse-animation">
-            Actualizar Tasa
+            Actualizar Tasa (Refrescar)
         </button>
 
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
@@ -297,9 +324,7 @@
                     placeholder="Cantidad (ej: 100+50-10)" 
                 >
                 <select id="currency-select" class="converter-input w-full p-3">
-                    <option value="USD">🇺🇸 Dólares (USD)</option>
-                    <option value="EUR">🇪🇺 Euros (EUR)</option>
-                    <option value="USDT">₮ USDT (Tether)</option>
+                    <!-- Opciones generadas dinámicamente -->
                 </select>
             </div>
             
@@ -321,6 +346,37 @@
     <!-- Caja de mensaje temporal (Toast) -->
     <div id="message-box" class="hidden">
         <p id="msg-text">¡Tasa copiada al portapapeles!</p>
+    </div>
+
+    <!-- Modal para Tasa Personalizada (NUEVO) -->
+    <div id="custom-rate-modal" class="modal">
+        <div class="modal-content w-full max-w-sm">
+            <h3 class="text-xl font-bold mb-4 text-green-400">Añadir Tasa Personalizada</h3>
+            <p class="text-sm text-gray-400 mb-4">Ingresa un nombre y el valor de la divisa.</p>
+
+            <label class="block text-sm font-medium text-gray-300 mb-1">Nombre (Ej: Zelle, PayPal)</label>
+            <input 
+                type="text" 
+                id="custom-rate-name" 
+                class="converter-input w-full mb-3" 
+                placeholder="Nombre (Max 20 chars)" 
+                maxlength="20"
+            >
+
+            <label class="block text-sm font-medium text-gray-300 mb-1">Valor en Bolívares</label>
+            <input 
+                type="number" 
+                id="custom-rate-value" 
+                class="converter-input w-full mb-6" 
+                placeholder="0.00" 
+                step="any"
+            >
+
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeModal('custom-rate-modal')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
+                <button id="save-custom-rate-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Guardar Tasa</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal para Editar Etiqueta (Tag) -->
@@ -408,9 +464,12 @@
     
     <script>
         let rates = {};
+        const DEFAULT_CURRENCIES = ['USD', 'EUR', 'USDT'];
+        let customRates = {}; // Objeto para guardar tasas personalizadas en runtime
         let currentCurrency = 'USD';
         let conversionDirection = 'currency-to-bs';
         const HISTORY_KEY = 'conversionHistory';
+        const CUSTOM_RATES_KEY = 'customRates'; // Key para localStorage
         let msgTimeout;
         let refreshInterval;
         let editingHistoryId = null; // ID del elemento que se está editando
@@ -465,10 +524,61 @@
             setTimeout(() => { currencyRateElement.classList.remove('rate-flash'); }, 800);
         }
 
-        // --- Lógica de Modales (Tagging y Viewing) ---
+        // --- Lógica de Modales (Tagging, Viewing, Custom Rates) ---
         
         window.closeModal = function(id) {
             document.getElementById(id).style.display = 'none';
+        }
+
+        // Lógica para ABRIR modal de tasa personalizada
+        window.openCustomRateModal = function() {
+            settingsMenu.style.display = 'none'; // Cerrar menú de ajustes
+            gearIcon.classList.remove('active');
+            document.getElementById('custom-rate-name').value = '';
+            document.getElementById('custom-rate-value').value = '';
+            document.getElementById('custom-rate-modal').style.display = 'flex';
+        }
+
+        // Lógica para GUARDAR tasa personalizada
+        window.saveCustomRate = function() {
+            const nameInput = document.getElementById('custom-rate-name');
+            const valueInput = document.getElementById('custom-rate-value');
+            
+            const name = nameInput.value.trim().toUpperCase();
+            const value = parseFloat(valueInput.value);
+
+            if (!name) {
+                showMessage("Por favor, ingresa un nombre para la tasa.", 3000);
+                return;
+            }
+            if (isNaN(value) || value <= 0) {
+                showMessage("Por favor, ingresa un valor numérico válido mayor a 0.", 3000);
+                return;
+            }
+
+            // Guardar en objeto runtime de custom rates
+            // Usamos name como ID y Display Symbol
+            customRates[name] = {
+                value: value,
+                symbol: 'Bs',
+                conversion: value,
+                displaySymbol: name.length > 3 ? name.substring(0,3) : name,
+                isCustom: true // Bandera para identificar
+            };
+
+            // Persistir en LocalStorage
+            localStorage.setItem(CUSTOM_RATES_KEY, JSON.stringify(customRates));
+
+            // Mezclar y actualizar UI
+            mergeRatesAndUpdateUI();
+            
+            // Cerrar modal y feedback
+            closeModal('custom-rate-modal');
+            showMessage(`Tasa personalizada "${name}" agregada.`, 3000);
+            
+            // Seleccionar automáticamente la nueva tasa
+            document.getElementById('currency-display-select').value = name;
+            updateDisplay(name, true);
         }
 
         window.openEditModal = function(id) {
@@ -497,13 +607,10 @@
 
             if (!item) return;
             
-            // 1. Preparar el texto de Tasa USADA (SIMPLIFICADO) - Se mantiene para el timestamp
+            // 1. Preparar el texto de Tasa USADA
             let rateUsedText = '';
             if (item.rateUsed) {
-                // Formateamos la tasa utilizada con formato ES-VE (punto miles, coma decimal)
                 const storedRate = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                
-                // Formato simplificado: Tasa USADA: Bs [Rate]
                 rateUsedText = `
                     <p class="text-sm mt-3 text-gray-400">
                         <span class="font-bold text-yellow-300">Tasa USADA:</span> Bs ${storedRate}
@@ -511,25 +618,25 @@
                 `;
             }
 
-            // 2. Determinar la etiqueta de la tasa (Tasa USD, EUR, USDT) para el detalle
-            // Formateamos la tasa utilizada con formato ES-VE (punto miles, coma decimal)
+            // 2. Determinar la etiqueta de la tasa
             const rateUsedFormatted = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             let rateTypeLabel = 'Tasa de Cambio';
+            
+            // Lógica simple para label de view
             if (item.rateCurrencySymbol === '$') rateTypeLabel = 'Tasa USD';
             else if (item.rateCurrencySymbol === '€') rateTypeLabel = 'Tasa EUR';
             else if (item.rateCurrencySymbol === '₮') rateTypeLabel = 'Tasa USDT';
+            else rateTypeLabel = `Tasa ${item.fromCurrency === 'Bolívares' ? item.toCurrency : item.fromCurrency}`;
             
-            // 3. Preparar detalles de la transacción (TEXTO CAMBIADO + NUEVAS LÍNEAS)
+            // 3. Preparar detalles de la transacción
             let detailsText = 
                 `Monto de Conversión: ${item.input} ${item.fromSymbol}\n` + 
                 `Total de Conversión: ${item.result} ${item.toSymbol}`;
 
-            // 4. NUEVO: Añadir Método de Pago
             if (item.paymentMethod && item.paymentMethod !== '') {
                 detailsText += `\nMétodo de Pago: ${item.paymentMethod}`;
             }
 
-            // 5. NUEVO: Añadir el Valor Actual de la Tasa como última línea
             detailsText += `\n\nValor Actual de la Tasa: ${rateTypeLabel} = Bs ${rateUsedFormatted}`;
 
             // 6. Actualizar el modal
@@ -547,7 +654,7 @@
             if (!editingHistoryId) return;
 
             const newTag = tagInput.value.trim().substring(0, 200);
-            const newPaymentMethod = document.getElementById('payment-select').value; // OBTENER MÉTODO DE PAGO
+            const newPaymentMethod = document.getElementById('payment-select').value; 
             
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             
@@ -556,7 +663,7 @@
                     return { 
                         ...item, 
                         tag: newTag,
-                        paymentMethod: newPaymentMethod // GUARDAR MÉTODO DE PAGO
+                        paymentMethod: newPaymentMethod
                     };
                 }
                 return item;
@@ -594,7 +701,6 @@
             localStorage.removeItem(HISTORY_KEY);
             loadHistory();
             showMessage("¡Historial de conversiones limpiado!", 3000);
-            // Cierra el menú de configuración si está abierto
             settingsMenu.style.display = 'none';
             gearIcon.classList.remove('active');
         }
@@ -602,7 +708,6 @@
         // --- Lógica de Conversión y Historial ---
 
         function evaluateExpression(expression) {
-            // Permite dígitos, '.', '+', '-', espacios y comas (que se ignoran)
             const safeExpression = expression.replace(/,/g, '').replace(/[^0-9.+-]/g, '').replace(/\s/g, '');
 
             if (!safeExpression) return null;
@@ -613,7 +718,6 @@
             }
 
             try {
-                // Función eval() segura para aritmética simple.
                 const result = new Function('return ' + safeExpression)();
                 if (isNaN(result) || !isFinite(result)) {
                     return null;
@@ -670,7 +774,6 @@
                 toSymbol = 'Bs';
             }
             
-            // *** Mantenemos el formato ES-VE (PUNTO MILES, COMA DECIMAL) para el resultado de la transacción en Bs ***
             const formattedConvertedValue = convertedValue.toLocaleString('es-VE', { 
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2 
@@ -678,7 +781,6 @@
             
             convertedValueDiv.textContent = `${toSymbol} ${formattedConvertedValue}`;
 
-            // Guardamos la expresión original (rawInput) y la tasa usada
             saveConversionToHistory(rawInput, fromCurrency, toCurrency, formattedConvertedValue, fromSymbol, toSymbol, convertedValue.toFixed(2), rateInfo.value, rateInfo.displaySymbol);
             conversionResultDiv.classList.remove('hidden');
         }
@@ -687,11 +789,10 @@
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const timestamp = new Date().toLocaleString('es-VE');
 
-            // Aseguramos que fromCurrency y toCurrency reflejen el texto completo del select para la lógica del modal
+            // Aseguramos que fromCurrency y toCurrency reflejen el texto completo del select
             const fromSelect = document.getElementById('currency-select');
             const fromCurrencyName = fromCurrency === 'Bolívares' ? fromCurrency : fromSelect.options[fromSelect.selectedIndex].text.trim();
             const toCurrencyName = toCurrency === 'Bolívares' ? toCurrency : fromSelect.options[fromSelect.selectedIndex].text.trim();
-
 
             const newItem = { 
                 id: crypto.randomUUID(), 
@@ -703,10 +804,10 @@
                 timestamp: timestamp, 
                 fromSymbol: fromSymbol, 
                 toSymbol: toSymbol,
-                rateUsed: rateUsed, // Tasa usada en la conversión
-                rateCurrencySymbol: rateCurrencySymbol, // Símbolo de la divisa de la tasa
+                rateUsed: rateUsed, 
+                rateCurrencySymbol: rateCurrencySymbol, 
                 tag: "",
-                paymentMethod: "" // NUEVO: Inicializar el método de pago
+                paymentMethod: "" 
             };
             history.unshift(newItem);
             if (history.length > 25) { 
@@ -734,7 +835,6 @@
                     ? `<span class="bg-blue-800 text-blue-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.tag.split('\n')[0].substring(0, 40)}...</span>` 
                     : '';
                 
-                // Muestra el método de pago si existe
                 const paymentDisplay = item.paymentMethod 
                     ? `<span class="bg-purple-800 text-purple-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.paymentMethod}</span>`
                     : '';
@@ -755,18 +855,15 @@
                     <div class="flex space-x-2 flex-shrink-0 mt-2 sm:mt-0">
                         ${item.tag || item.paymentMethod ? `
                             <button onclick="openViewModal('${item.id}')" title="Ver detalle de etiqueta y tasas" class="view-details-btn hover:text-green-400">
-                                <!-- Icono de Ojo (Eye) -->
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0m-0 -4v4"></path><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"></path></svg>
                             </button>
                         ` : ''}
                         
                         <button onclick="openEditModal('${item.id}')" title="Etiquetar" class="edit-tag-btn hover:text-blue-400">
-                            <!-- Icono de Lápiz (Pencil) -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path><path d="M13.5 6.5l4 4"></path></svg>
                         </button>
 
                         <button onclick="deleteHistoryItem('${item.id}')" title="Eliminar" class="delete-history-item hover:text-red-500">
-                            <!-- Icono de Papelera (Trash) -->
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0m-0 -4v4"></path><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>
                         </button>
                     </div>
@@ -777,50 +874,122 @@
         
         // --- Lógica de Tasas ---
 
-        function updateUIWithRates(data, isUpdate) {
-            rates = data.rates;
+        // Función auxiliar para construir los selects dinámicamente
+        function renderCurrencyOptions() {
+            const displaySelect = document.getElementById('currency-display-select');
+            const converterSelect = document.getElementById('currency-select');
             
-            const formattedDate = new Intl.DateTimeFormat('es-VE', {
-                day: 'numeric', month: 'long', year: 'numeric'
-            }).format(new Date(data.timestamp));
+            // Guardar selección actual para restaurarla si es posible
+            const currentDisplayVal = displaySelect.value;
+            const currentConverterVal = converterSelect.value;
 
-            document.getElementById('last-updated').textContent = formattedDate;
-            document.getElementById('last-updated-label').textContent = 'Fecha Actual:';
+            // Limpiar opciones
+            displaySelect.innerHTML = '';
+            converterSelect.innerHTML = '';
+
+            // Construir opciones combinadas (Default + Custom)
+            const allRatesKeys = Object.keys(rates);
             
-            updateDisplay(currentCurrency, isUpdate); 
+            // Priorizar USD, EUR, USDT en el orden si existen, luego el resto
+            const orderedKeys = [...DEFAULT_CURRENCIES.filter(k => allRatesKeys.includes(k)), ...allRatesKeys.filter(k => !DEFAULT_CURRENCIES.includes(k))];
+
+            orderedKeys.forEach(key => {
+                const rate = rates[key];
+                let label = '';
+                
+                // Labels bonitos para las default
+                if (key === 'USD') label = `🇺🇸 Dólar (${key})`;
+                else if (key === 'EUR') label = `🇪🇺 Euro (${key})`;
+                else if (key === 'USDT') label = `₮ USDT (Tether)`;
+                else label = `🔧 ${key}`; // Label para custom
+
+                const option1 = document.createElement('option');
+                option1.value = key;
+                option1.textContent = label;
+                
+                const option2 = option1.cloneNode(true);
+
+                displaySelect.appendChild(option1);
+                converterSelect.appendChild(option2);
+            });
+
+            // Restaurar selección o default a USD
+            if (orderedKeys.includes(currentDisplayVal)) displaySelect.value = currentDisplayVal;
+            else displaySelect.value = 'USD';
+
+            if (orderedKeys.includes(currentConverterVal)) converterSelect.value = currentConverterVal;
+            else converterSelect.value = 'USD';
+        }
+
+        function mergeRatesAndUpdateUI(defaultData = null) {
+            // Si viene data de default (manual update o init), usarla base
+            // Si no, usar rates actuales como base
+            let baseRates = defaultData ? defaultData.rates : rates;
+
+            // Fusionar con Custom Rates
+            rates = { ...baseRates, ...customRates };
+            
+            // Actualizar timestamp si vino nueva data
+            if (defaultData) {
+                const formattedDate = new Intl.DateTimeFormat('es-VE', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                }).format(new Date(defaultData.timestamp));
+                document.getElementById('last-updated').textContent = formattedDate;
+            }
+
+            // Re-renderizar selects
+            renderCurrencyOptions();
+            
+            // Actualizar display principal
+            updateDisplay(currentCurrency, !!defaultData);
+            
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
             updateConversionInputPlaceholder();
+        }
+
+        function updateUIWithRates(data, isUpdate) {
+            mergeRatesAndUpdateUI(data);
         }
         
         function updateDisplay(currency, isUpdate = false) {
             const rateInfo = rates[currency];
             const usdtNotice = document.getElementById('usdt-notice');
+            const customNotice = document.getElementById('custom-notice'); // NUEVO
             const sourceTextElement = document.getElementById('source-text');
             
             currentCurrency = currency;
+            
+            // Reset visibilidad notificaciones
+            usdtNotice.classList.add('hidden');
+            customNotice.classList.add('hidden');
 
             if (currency === 'USDT') {
                 sourceTextElement.textContent = 'Fuente: Promedio P2P de Cripto-Exchanges';
                 usdtNotice.classList.remove('hidden');
+            } else if (rateInfo && rateInfo.isCustom) {
+                sourceTextElement.textContent = 'Fuente: Usuario (Personalizado)';
+                customNotice.classList.remove('hidden');
             } else {
                 sourceTextElement.textContent = 'Fuente: Banco Central de Venezuela (BCV)';
-                usdtNotice.classList.add('hidden');
             }
 
             if (rateInfo) {
-                // *** Usamos 'en-US' para que el decimal sea el PUNTO (ej: 231.04) ***
                 const formattedRate = rateInfo.value.toLocaleString('en-US', { 
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
                 });
 
-                currencyRateElement.textContent = `${rateInfo.symbol} ${formattedRate}`;
+                // MODIFICACIÓN: Mostrar siempre "Bs" en lugar del símbolo de la moneda
+                currencyRateElement.textContent = `Bs ${formattedRate}`;
                 
                 if (isUpdate) {
                     applyFlashEffect();
                 }
                 
+                // Asegurar sincronización
+                const displaySelect = document.getElementById('currency-display-select');
+                if (displaySelect.value !== currency) displaySelect.value = currency;
                 document.getElementById('currency-select').value = currency;
             }
         }
@@ -828,8 +997,11 @@
         function updateConversionInputPlaceholder() {
             const amountInput = document.getElementById('amount-input');
             const currencySelect = document.getElementById('currency-select');
-            const rateInfo = rates[currencySelect.value];
             
+            // Protección contra select vacío
+            if (!currencySelect.value) return;
+
+            const rateInfo = rates[currencySelect.value];
             const currencyLabel = currencySelect.options[currencySelect.selectedIndex].text.split(' ')[0]; 
 
             if (conversionDirection === 'bs-to-currency') {
@@ -838,19 +1010,66 @@
                 amountInput.placeholder = `Cantidad en ${currencyLabel} (${rateInfo.displaySymbol}) (ej: 10+5-2.5)`;
             }
         }
+
+        // Función para detectar dispositivo
+        function detectDevice() {
+            const deviceIconContainer = document.getElementById('device-icon');
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            
+            let iconHtml = '';
+            if (isMobile) {
+                // Icono de Móvil
+                iconHtml = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    Móvil
+                `;
+            } else {
+                // Icono de PC (Monitor)
+                iconHtml = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    PC
+                `;
+            }
+            
+            deviceIconContainer.innerHTML = iconHtml;
+            deviceIconContainer.classList.remove('hidden');
+        }
         
         // Función para inicializar las tasas (con los nuevos valores)
         function initRates(isManualUpdate = false) {
+             // 1. Cargar Custom Rates de LocalStorage
+             const storedCustomRates = localStorage.getItem(CUSTOM_RATES_KEY);
+             if (storedCustomRates) {
+                 customRates = JSON.parse(storedCustomRates);
+             }
+
+             // 2. Definir tasas default
              const data = {
                  rates: {
-                     // Las tasas son datos de ejemplo
                      'USD': { value: 249.19, symbol: 'Bs', conversion: 244.30, displaySymbol: '$' }, 
                      'EUR': { value: 289.16, symbol: 'Bs', conversion: 286.40, displaySymbol: '€' },
                      'USDT': { value: 400.59, symbol: 'Bs', conversion: 400.59, displaySymbol: '₮' },
                  },
                  timestamp: Date.now() 
              };
-             updateUIWithRates(data, isManualUpdate);
+             
+             // 3. Simulación de carga (Refresh Effect) en la carga inicial y si es un rate por defecto
+             // Si la moneda actual es una de las default, mostramos el loading por un momento
+             if (!isManualUpdate && DEFAULT_CURRENCIES.includes(currentCurrency)) {
+                 // Aseguramos que el loading esté visible y el rate oculto al inicio
+                 document.getElementById('loading').classList.remove('hidden');
+                 document.getElementById('rate-display').classList.add('hidden');
+                 
+                 setTimeout(() => {
+                     updateUIWithRates(data, isManualUpdate);
+                 }, 800); // 800ms de "carga"
+             } else {
+                 updateUIWithRates(data, isManualUpdate);
+             }
         }
         
         // --- Event Listeners ---
@@ -864,14 +1083,15 @@
             showMessage(`Hora actual: ${timeString}`, 5000);
         });
         document.getElementById('refresh-page-btn').addEventListener('click', () => { window.location.reload(); });
+        
+        // MODIFICACIÓN: El botón principal de actualizar ahora recarga la página
         document.getElementById('refresh-btn').addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('rate-display').classList.add('hidden');
+            // Simular feedback visual rápido antes de recargar
+            document.getElementById('refresh-btn').innerText = "Refrescando...";
             setTimeout(() => {
-                initRates(true);
-                showMessage("Tasa actualizada.", 3000);
-            }, 500);
+                window.location.reload();
+            }, 300);
         });
 
         document.getElementById('conversion-toggle-btn').addEventListener('click', () => {
@@ -902,23 +1122,27 @@
         });
 
         document.getElementById('save-tag-btn').addEventListener('click', saveTag);
-        document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete); // Botón de confirmación
+        document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
+        
+        // NUEVOS LISTENER PARA TASA PERSONALIZADA
+        document.getElementById('add-custom-rate-btn').addEventListener('click', openCustomRateModal);
+        document.getElementById('save-custom-rate-btn').addEventListener('click', saveCustomRate);
 
         tagInput.addEventListener('input', () => {
             tagCharCount.textContent = tagInput.value.length;
         });
 
         window.onload = () => {
+            // Detectar dispositivo primero
+            detectDevice();
+            // Inicializar tasas con simulación de carga
             initRates(false); 
             loadHistory();
             updateConversionInputPlaceholder();
         };
+        
+        // Listener para cambio de tamaño de ventana para actualizar icono si cambia
+        window.onresize = detectDevice;
     </script>
 </body>
 </html>
-
-
-
-
-
-
