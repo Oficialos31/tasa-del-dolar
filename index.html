@@ -14,7 +14,7 @@
             --text-color: #c9d1d9;
             --card-bg: #161b22;
             --border-color: #30363d;
-            --accent-color: #10B981; /* Verde esmeralda (Green-400) */
+            --accent-color: #10B981;
             --secondary-text: #8b949e;
             --gradient-start: #10B981;
             --gradient-end: #059669;
@@ -27,6 +27,7 @@
             min-height: 100vh;
             padding: 0;
             transition: background-color 0.3s ease, color 0.3s ease;
+            -webkit-tap-highlight-color: transparent; /* Elimina highlight azul en móvil */
         }
         
         .card { background-color: var(--card-bg); }
@@ -34,7 +35,6 @@
         .text-green-400 { color: var(--accent-color); }
         .text-gray-400 { color: var(--secondary-text); }
         
-        /* General element colors for both themes */
         .gradient-button {
             background-image: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
             box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
@@ -47,16 +47,28 @@
             transform: translateY(-2px);
         }
 
-        .converter-input, .currency-select, .modal-textarea {
+        .converter-input, .modal-textarea, .custom-select-trigger {
             background-color: var(--card-bg);
             color: var(--text-color);
             border-radius: 0.5rem;
             padding: 0.75rem 1rem;
             border: 1px solid var(--border-color);
             transition: all 0.2s ease-in-out;
+            width: 100%;
+            outline: none;
         }
         
-        .converter-input:hover, .currency-select:hover { border-color: var(--accent-color); }
+        /* Estilo para el trigger del selector personalizado */
+        .custom-select-trigger {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .converter-input:hover, .custom-select-trigger:hover { border-color: var(--accent-color); }
+        .converter-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
         
         .spinner {
             border: 4px solid var(--border-color);
@@ -89,13 +101,9 @@
             border-radius: 50%;
         }
 
-        .delete-history-item {
-            color: #EF4444;
-            background-color: transparent;
-        }
-        
-        .edit-tag-btn:hover { color: #3B82F6; } /* Blue */
-        .view-details-btn:hover { color: #10B981; } /* Green */
+        .delete-history-item { color: #EF4444; background-color: transparent; }
+        .edit-tag-btn:hover { color: #3B82F6; } 
+        .view-details-btn:hover { color: #10B981; } 
         .delete-history-item:hover { color: #DC2626; transform: scale(1.1); }
         
         .history-item {
@@ -124,11 +132,12 @@
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
             transition: background-color 0.2s ease;
+            width: 100%;
+            text-align: left;
         }
         
         .config-button:hover { background-color: #3B4452; }
         
-        /* Estilos para lista de tasas personalizadas en settings */
         .custom-rate-item {
             display: flex;
             justify-content: space-between;
@@ -163,7 +172,6 @@
         .gear-icon:hover, .gear-icon.active { transform: rotate(45deg); }
         .fixed-gear { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 100; }
 
-        /* Estilos del modal */
         .modal {
             position: fixed;
             top: 0;
@@ -186,16 +194,7 @@
             padding: 1.5rem;
             position: relative;
         }
-        .modal-textarea {
-            background-color: #1f2937;
-            border-color: #4b5563;
-            color: #d1d5db;
-            resize: vertical; /* Permite redimensionamiento vertical para la etiqueta */
-            font-family: monospace;
-            min-height: 100px; /* Altura mínima para la etiqueta */
-        }
 
-        /* Estilo para el icono de dispositivo */
         .device-indicator {
             display: flex;
             align-items: center;
@@ -209,7 +208,6 @@
             margin-left: 0.5rem;
         }
 
-        /* Estilos para selector de emojis */
         .emoji-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -226,22 +224,71 @@
             background-color: #1f2937;
             transition: all 0.2s;
         }
-        .emoji-option:hover {
-            background-color: #374151;
-        }
+        .emoji-option:hover { background-color: #374151; }
         .emoji-option.selected {
             border-color: var(--accent-color);
             background-color: rgba(16, 185, 129, 0.1);
         }
+        
         .disabled-btn {
             opacity: 0.5;
             cursor: not-allowed;
+            pointer-events: none;
         }
+
+        /* Estilos para el nuevo Toggle Button central */
+        .swap-container {
+            position: relative;
+            height: 1rem; /* Espacio para que el botón flote */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .swap-btn {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            color: var(--accent-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .swap-btn:hover {
+            border-color: var(--accent-color);
+            transform: scale(1.1) rotate(180deg);
+        }
+
+        /* Estilos para el Menú de Selección de Moneda */
+        .currency-option-card {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background-color: #1f2937;
+            border: 1px solid transparent;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .currency-option-card:hover {
+            border-color: var(--accent-color);
+            background-color: #374151;
+        }
+        .currency-option-card.active {
+            border-color: var(--accent-color);
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        .currency-icon { font-size: 1.5rem; margin-right: 1rem; }
     </style>
 </head>
 <body class="theme-dark">
 
-    <!-- Botón de configuración fijo en la esquina superior derecha -->
     <div class="fixed-gear">
         <button id="settings-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 gear-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -250,16 +297,13 @@
                 <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
             </svg>
         </button>
-        <!-- Menú de configuración -->
         <div id="settings-menu" class="card rounded-xl p-4 flex flex-col space-y-4">
             
-            <!-- Lista de Tasas Personalizadas Existentes -->
             <div id="custom-rates-list-container" class="hidden">
                 <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Tus Tasas:</p>
                 <div id="custom-rates-list"></div>
             </div>
 
-            <!-- BOTÓN AÑADIDO: Tasa Personalizada -->
             <button id="add-custom-rate-btn" class="config-button text-green-400 font-semibold border border-gray-700 hover:border-green-400">
                 Añadir Tasa Personalizada
             </button>
@@ -271,18 +315,16 @@
             <button id="clear-history-btn" class="config-button text-red-400">
                 Limpiar Historial
             </button>
-            <!-- El botón refrescar del menú también recargará la página -->
             <button id="refresh-page-btn" class="config-button">
                 Refrescar
             </button>
             <div class="text-center text-sm text-gray-500 pt-2">
-                Versión: <span id="app-version">3.3</span>
+                Versión: <span id="app-version">3.5</span>
             </div>
         </div>
     </div>
 
-    <!-- INICIO DE LA MODIFICACIÓN DE ADAPTABILIDAD -->
-    <main class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
+    <main id="main-container" class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
         <div class="flex items-center justify-center space-x-2 w-full mb-4">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
                 <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -290,22 +332,21 @@
             </svg>
             <h1 class="text-3xl font-bold text-green-400">Tasa VE</h1>
             
-            <!-- NUEVO: Indicador de Dispositivo -->
-            <div id="device-icon" class="device-indicator hidden" title="Dispositivo Detectado">
-                <!-- El icono se insertará vía JS -->
-            </div>
+            <div id="device-icon" class="device-indicator hidden" title="Dispositivo Detectado"></div>
         </div>
-        <!-- FIN DE LA MODIFICACIÓN DE ADAPTABILIDAD -->
         
         <p class="text-gray-400 mb-6">Tasas Actualizadas del Banco Central de Venezuela</p>
         
         <div class="animated-bar w-full h-1 rounded-full mb-6"></div>
 
-        <!-- Selectores de Divisa -->
-        <div class="flex justify-center mb-6">
-            <select id="currency-display-select" class="currency-select w-full">
-                <!-- Opciones generadas dinámicamente -->
-            </select>
+        <!-- Selector de Visualización (Trigger Personalizado) -->
+        <div class="flex justify-center mb-6 relative">
+            <div id="display-select-trigger" class="custom-select-trigger" onclick="openCurrencySelector('display')">
+                <span id="display-select-text">Seleccionar Moneda...</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </div>
         </div>
 
         <div id="loading" class="flex items-center justify-center space-x-2 text-gray-500 text-lg mb-4">
@@ -317,7 +358,6 @@
             <div class="card p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-400">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
-                    <!-- MODIFICACIÓN: Mostrar siempre Bs [Monto] -->
                     <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
                     <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors" title="Copiar Tasa">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -327,17 +367,14 @@
                 </div>
             </div>
             
-            <!-- FUENTE DE DATOS VISIBLE -->
             <div id="source-label" class="text-sm text-gray-500 mt-2 mb-4">
                 <p id="source-text" class="font-semibold"></p>
             </div>
             
-            <!-- DISCLAIMER DE USDT: Más prominente y bien ubicado -->
             <div id="usdt-notice" class="card p-3 rounded-xl text-sm text-red-400 border border-red-500 hidden">
                 <p>⚠️ **ATENCIÓN:** Tasa USDT basada en promedio P2P. Valor altamente referencial, no oficial. ¡Opera con cautela!</p>
             </div>
 
-            <!-- DISCLAIMER DE PERSONALIZADA: Se muestra cuando es una tasa custom -->
             <div id="custom-notice" class="card p-3 rounded-xl text-sm text-blue-400 border border-blue-500 hidden">
                 <p>🔧 Tasa Personalizada por el usuario.</p>
             </div>
@@ -348,7 +385,6 @@
         </div>
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
 
-        <!-- MODIFICACIÓN: Texto corregido, se quitó (Refrescar) -->
         <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-3 px-4 rounded-xl gradient-button pulse-animation">
             Actualizar Tasa
         </button>
@@ -356,25 +392,31 @@
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
             <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
             
-            <div class="flex justify-center mb-4">
-                <button id="conversion-toggle-btn" class="w-full text-white card flex items-center justify-center space-x-2 p-3 rounded-lg focus:outline-none transition-colors border border-gray-700 hover:border-green-400">
-                    <span id="toggle-text">Divisa a Bolívares</span>
-                    <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transform transition-transform duration-300" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-            </div>
-
-            <div class="flex flex-col space-y-4 mb-4 items-center justify-center">
+            <div class="flex flex-col space-y-2 mb-4 items-center justify-center relative">
+                <!-- Input Cantidad -->
                 <input 
                     type="text" 
                     id="amount-input" 
                     class="converter-input w-full p-3" 
                     placeholder="Cantidad (ej: 100+50-10)" 
                 >
-                <select id="currency-select" class="converter-input w-full p-3">
-                    <!-- Opciones generadas dinámicamente -->
-                </select>
+                
+                <!-- Botón de Swap (Invertir) en el medio -->
+                <div class="swap-container w-full">
+                    <button id="swap-conversion-btn" class="swap-btn" title="Invertir Conversión">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Selector de Moneda Conversor (Trigger Personalizado) -->
+                <div id="converter-select-trigger" class="custom-select-trigger w-full p-3" onclick="openCurrencySelector('converter')">
+                    <span id="converter-select-text">Seleccionar Moneda...</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </div>
             </div>
             
             <button id="convert-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors">
@@ -383,6 +425,7 @@
             
             <div id="conversion-result" class="mt-4 p-4 card rounded-lg hidden">
                 <div id="converted-value" class="text-3xl font-bold text-green-400 mb-2"></div>
+                <p id="conversion-direction-text" class="text-sm text-gray-400 text-center"></p>
             </div>
         </div>
 
@@ -392,17 +435,31 @@
         </div>
     </main>
 
-    <!-- Caja de mensaje temporal (Toast) -->
     <div id="message-box" class="hidden">
         <p id="msg-text">¡Tasa copiada al portapapeles!</p>
     </div>
 
-    <!-- Modal para Tasa Personalizada (NUEVO) -->
+    <!-- NUEVO: Modal de Selección de Moneda (Estilo Menú) -->
+    <div id="currency-selector-modal" class="modal">
+        <div class="modal-content w-full max-w-sm">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-green-400">Seleccionar Tasa</h3>
+                <button onclick="closeModal('currency-selector-modal')" class="text-gray-400 hover:text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="currency-options-list" class="max-h-96 overflow-y-auto">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
+
     <div id="custom-rate-modal" class="modal">
         <div class="modal-content w-full max-w-sm">
             <h3 class="text-xl font-bold mb-4 text-green-400">Añadir Tasa Personalizada</h3>
             
-            <!-- SELECCION DE EMOJI -->
             <p class="text-sm text-gray-300 mb-2">Selecciona un Icono:</p>
             <div class="emoji-grid" id="emoji-selector">
                 <div class="emoji-option selected" data-emoji="🔧">🔧</div>
@@ -418,7 +475,6 @@
             </div>
 
             <label class="block text-sm font-medium text-gray-300 mb-1">Nombre (Ej: Zelle, PayPal)</label>
-            <!-- MODIFICACIÓN: Placeholder corregido -->
             <input 
                 type="text" 
                 id="custom-rate-name" 
@@ -428,7 +484,6 @@
             >
 
             <label class="block text-sm font-medium text-gray-300 mb-1">Valor en Bolívares (Max 4 dígitos)</label>
-            <!-- MODIFICACIÓN: Max 4 dígitos enteros (9999) -->
             <input 
                 type="number" 
                 id="custom-rate-value" 
@@ -445,7 +500,6 @@
         </div>
     </div>
 
-    <!-- Modal para Editar Etiqueta (Tag) -->
     <div id="edit-tag-modal" class="modal">
         <div class="modal-content w-full max-w-sm">
             <h3 class="text-xl font-bold mb-4">Añadir/Editar Etiqueta</h3>
@@ -481,7 +535,6 @@
         </div>
     </div>
 
-    <!-- Modal para Ver Detalles (View) -->
     <div id="view-details-modal" class="modal">
         <div class="modal-content w-full max-w-xl">
             <h3 class="text-2xl font-bold mb-4 text-green-400">Detalle de Conversión</h3>
@@ -502,13 +555,10 @@
                 class="modal-textarea w-full p-4 text-sm"
             ></textarea>
             
-            <div id="view-modal-timestamp" class="text-right text-xs text-gray-500 mt-2">
-                <!-- Se llenará con JS -->
-            </div>
+            <div id="view-modal-timestamp" class="text-right text-xs text-gray-500 mt-2"></div>
         </div>
     </div>
     
-    <!-- Modal para Confirmación de Eliminación -->
     <div id="delete-confirm-modal" class="modal">
         <div class="modal-content w-full max-w-xs">
             <h3 class="text-xl font-bold mb-4 text-red-500">Confirmación Necesaria</h3>
@@ -520,7 +570,25 @@
         </div>
     </div>
     
-    <!-- Modal para Confirmación de Eliminación de TASA (NUEVO) -->
+    <!-- NUEVO: Modal de Confirmación para Limpiar Historial Completo -->
+    <div id="clear-history-confirm-modal" class="modal">
+        <div class="modal-content w-full max-w-sm text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-white">¡Cuidado!</h3>
+            <p class="text-gray-300 mb-6">¿Estás seguro de realizar esta acción? El historial se borrará permanentemente y <strong>no se puede deshacer</strong>.</p>
+            <div class="flex justify-center space-x-3">
+                <button onclick="closeModal('clear-history-confirm-modal')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
+                <button id="confirm-clear-history-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg disabled-btn transition-colors" disabled>
+                    Sí, borrar (<span id="clear-countdown">5</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+    
     <div id="delete-rate-confirm-modal" class="modal">
         <div class="modal-content w-full max-w-xs">
             <h3 class="text-xl font-bold mb-4 text-red-500">Borrar Tasa</h3>
@@ -536,17 +604,25 @@
         let rates = {};
         const DEFAULT_CURRENCIES = ['USD', 'EUR', 'USDT'];
         let customRates = {}; 
-        const MAX_CUSTOM_RATES = 2; // MODIFICACIÓN: Límite de 2 tasas
+        const MAX_CUSTOM_RATES = 2;
         let currentCurrency = 'USD';
+        
+        // Variables para los selectores (display vs converter)
+        let displayCurrency = 'USD';
+        let converterCurrency = 'USD';
+        
+        // Dirección de conversión: 'currency-to-bs' (Divisa -> Bs) o 'bs-to-currency' (Bs -> Divisa)
         let conversionDirection = 'currency-to-bs';
+        
         const HISTORY_KEY = 'conversionHistory';
         const CUSTOM_RATES_KEY = 'customRates'; 
         let msgTimeout;
-        let refreshInterval;
+        let clearHistoryInterval; // Intervalo para el botón de borrar
         let editingHistoryId = null; 
         let pendingDeleteId = null; 
-        let pendingDeleteRateName = null; // Para borrar tasa
-        let selectedEmoji = '🔧'; // Emoji por defecto
+        let pendingDeleteRateName = null; 
+        let selectedEmoji = '🔧'; 
+        let activeSelectorContext = null; // 'display' o 'converter'
 
         const settingsBtn = document.getElementById('settings-btn');
         const settingsMenu = document.getElementById('settings-menu');
@@ -562,12 +638,9 @@
             const msgBox = document.getElementById('message-box');
             const msgText = document.getElementById('msg-text');
             msgText.textContent = message;
-            
             clearTimeout(msgTimeout);
-            
             msgBox.style.display = 'block';
             setTimeout(() => { msgBox.style.opacity = 1; }, 10);
-            
             msgTimeout = setTimeout(() => {
                 const msgBox = document.getElementById('message-box');
                 msgBox.style.opacity = 0;
@@ -579,7 +652,6 @@
             const rateText = currencyRateElement.textContent.trim().split(' ')[1]; 
             const tempInput = document.createElement('textarea');
             const valueToCopy = rateText.replace(/,/g, ''); 
-
             tempInput.value = valueToCopy; 
             document.body.appendChild(tempInput);
             tempInput.select();
@@ -595,38 +667,172 @@
             setTimeout(() => { currencyRateElement.classList.remove('rate-flash'); }, 800);
         }
 
+        // --- Cierre de Teclado en Móvil ---
+        document.addEventListener('click', (e) => {
+            // Si el click no fue en un input o botón, quitar foco
+            const target = e.target;
+            const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+            const isButton = target.tagName === 'BUTTON' || target.closest('button');
+            const isSettings = target.closest('#settings-menu') || target.closest('#settings-btn');
+            
+            if (!isInput && !isButton && !isSettings) {
+                // Si el teclado está abierto (hay un elemento activo), lo cerramos
+                if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+                    document.activeElement.blur();
+                }
+            }
+        });
+
         // --- Manejo de Emojis ---
         emojiOptions.forEach(option => {
             option.addEventListener('click', () => {
-                // Remover clase seleccionado de todos
                 emojiOptions.forEach(opt => opt.classList.remove('selected'));
-                // Añadir a este
                 option.classList.add('selected');
                 selectedEmoji = option.getAttribute('data-emoji');
             });
         });
 
         // --- Lógica de Modales ---
-        
         window.closeModal = function(id) {
             document.getElementById(id).style.display = 'none';
+            // Limpiar intervalo si se cierra el modal de borrar historial
+            if (id === 'clear-history-confirm-modal') {
+                clearInterval(clearHistoryInterval);
+            }
         }
 
+        // --- Lógica de NUEVO SELECTOR DE MONEDA ---
+        
+        window.openCurrencySelector = function(context) {
+            activeSelectorContext = context; // 'display' o 'converter'
+            const listContainer = document.getElementById('currency-options-list');
+            listContainer.innerHTML = ''; // Limpiar lista anterior
+            
+            const allRatesKeys = Object.keys(rates);
+            // Ordenar: Defaults primero, luego customs
+            const orderedKeys = [...DEFAULT_CURRENCIES.filter(k => allRatesKeys.includes(k)), ...allRatesKeys.filter(k => !DEFAULT_CURRENCIES.includes(k))];
+            
+            // Determinar cuál es la moneda seleccionada actualmente en este contexto
+            const currentSelected = context === 'display' ? displayCurrency : converterCurrency;
+
+            orderedKeys.forEach(key => {
+                const rate = rates[key];
+                let labelName = '';
+                let labelEmoji = '';
+                
+                if (key === 'USD') { labelName = 'Dólar (USD)'; labelEmoji = '🇺🇸'; }
+                else if (key === 'EUR') { labelName = 'Euro (EUR)'; labelEmoji = '🇪🇺'; }
+                else if (key === 'USDT') { labelName = 'USDT (Tether)'; labelEmoji = '₮'; }
+                else { labelName = key; labelEmoji = rate.displaySymbol; }
+
+                const item = document.createElement('div');
+                item.className = `currency-option-card ${currentSelected === key ? 'active' : ''}`;
+                item.innerHTML = `
+                    <span class="currency-icon">${labelEmoji}</span>
+                    <span class="font-bold text-gray-200 text-lg">${labelName}</span>
+                `;
+                
+                item.onclick = () => selectCurrencyFromModal(key);
+                listContainer.appendChild(item);
+            });
+
+            document.getElementById('currency-selector-modal').style.display = 'flex';
+        }
+
+        function selectCurrencyFromModal(key) {
+            if (activeSelectorContext === 'display') {
+                displayCurrency = key;
+                updateDisplay(key, true);
+            } else if (activeSelectorContext === 'converter') {
+                converterCurrency = key;
+                updateConverterUI();
+            }
+            closeModal('currency-selector-modal');
+        }
+
+        // Función para actualizar los textos de los triggers (botones selectores)
+        function updateSelectTriggers() {
+            // Actualizar Display Trigger (Arriba)
+            const displayRate = rates[displayCurrency];
+            if (displayRate) {
+                let label = displayCurrency;
+                let emoji = displayRate.displaySymbol;
+                if (displayCurrency === 'USD') emoji = '🇺🇸'; 
+                if (displayCurrency === 'EUR') emoji = '🇪🇺';
+                if (displayCurrency === 'USDT') emoji = '₮';
+                
+                document.getElementById('display-select-text').innerHTML = `<span class="mr-2">${emoji}</span> ${label}`;
+            }
+
+            // Actualizar Converter Trigger (Abajo)
+            const converterRate = rates[converterCurrency];
+            if (converterRate) {
+                let label = converterCurrency;
+                let emoji = converterRate.displaySymbol;
+                if (converterCurrency === 'USD') emoji = '🇺🇸'; 
+                if (converterCurrency === 'EUR') emoji = '🇪🇺';
+                if (converterCurrency === 'USDT') emoji = '₮';
+
+                document.getElementById('converter-select-text').innerHTML = `<span class="mr-2">${emoji}</span> ${label}`;
+            }
+        }
+
+        // --- Lógica de Limpiar Historial con Cuenta Regresiva ---
+        
+        document.getElementById('clear-history-btn').addEventListener('click', () => {
+            // Cerrar menú settings
+            settingsMenu.style.display = 'none';
+            gearIcon.classList.remove('active');
+            
+            // Abrir modal confirmación
+            const modal = document.getElementById('clear-history-confirm-modal');
+            const confirmBtn = document.getElementById('confirm-clear-history-btn');
+            const countdownSpan = document.getElementById('clear-countdown');
+            
+            let timeLeft = 5;
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('disabled-btn');
+            confirmBtn.classList.remove('hover:bg-red-700');
+            countdownSpan.textContent = timeLeft;
+            confirmBtn.innerHTML = `Sí, borrar (${timeLeft})`;
+            
+            modal.style.display = 'flex';
+            
+            clearInterval(clearHistoryInterval);
+            clearHistoryInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft > 0) {
+                    countdownSpan.textContent = timeLeft;
+                    confirmBtn.innerHTML = `Sí, borrar (${timeLeft})`;
+                } else {
+                    clearInterval(clearHistoryInterval);
+                    confirmBtn.disabled = false;
+                    confirmBtn.classList.remove('disabled-btn');
+                    confirmBtn.classList.add('hover:bg-red-700');
+                    confirmBtn.innerHTML = `Sí, borrar definitivamente`;
+                }
+            }, 1000);
+        });
+
+        document.getElementById('confirm-clear-history-btn').addEventListener('click', () => {
+            localStorage.removeItem(HISTORY_KEY);
+            loadHistory();
+            closeModal('clear-history-confirm-modal');
+            showMessage("¡Historial borrado permanentemente!", 3000);
+        });
+
+
         window.openCustomRateModal = function() {
-            // Verificar límite de tasas
             if (Object.keys(customRates).length >= MAX_CUSTOM_RATES) {
                 showMessage("Has alcanzado el límite máximo de 2 tasas personalizadas.", 3000);
                 return;
             }
-
             settingsMenu.style.display = 'none';
             gearIcon.classList.remove('active');
             
-            // Resetear campos
             document.getElementById('custom-rate-name').value = '';
             document.getElementById('custom-rate-value').value = '';
             
-            // Resetear emoji
             emojiOptions.forEach(opt => opt.classList.remove('selected'));
             document.querySelector('.emoji-option[data-emoji="🔧"]').classList.add('selected');
             selectedEmoji = '🔧';
@@ -636,7 +842,6 @@
 
         // --- Lógica de Gestión de Tasas ---
 
-        // Función para actualizar el menú de ajustes con la lista de tasas y control del botón añadir
         function updateSettingsMenu() {
             const listContainer = document.getElementById('custom-rates-list-container');
             const listDiv = document.getElementById('custom-rates-list');
@@ -646,7 +851,6 @@
             const customKeys = Object.keys(customRates);
             const count = customKeys.length;
 
-            // 1. Manejo del botón Añadir y mensaje de límite
             if (count >= MAX_CUSTOM_RATES) {
                 addBtn.classList.add('hidden');
                 maxMsg.classList.remove('hidden');
@@ -655,7 +859,6 @@
                 maxMsg.classList.add('hidden');
             }
 
-            // 2. Renderizar lista de tasas para borrar
             if (count > 0) {
                 listContainer.classList.remove('hidden');
                 listDiv.innerHTML = '';
@@ -667,7 +870,7 @@
                     
                     item.innerHTML = `
                         <div class="flex items-center text-sm">
-                            <span class="mr-2 text-xl">${rate.displaySymbol}</span> <!-- Usamos el emoji guardado -->
+                            <span class="mr-2 text-xl">${rate.displaySymbol}</span>
                             <span class="font-semibold text-gray-300 truncate w-32">${key}</span>
                         </div>
                         <button onclick="confirmDeleteRate('${key}')" class="text-red-400 hover:text-red-300 p-1 hover:bg-gray-700 rounded transition-colors" title="Borrar Tasa">
@@ -684,16 +887,14 @@
         }
 
         window.confirmDeleteRate = function(name) {
-            settingsMenu.style.display = 'none'; // ocultar menu
+            settingsMenu.style.display = 'none'; 
             gearIcon.classList.remove('active');
             pendingDeleteRateName = name;
             document.getElementById('delete-rate-name-span').textContent = name;
             document.getElementById('delete-rate-confirm-modal').style.display = 'flex';
         }
 
-        // Lógica para GUARDAR tasa personalizada
         window.saveCustomRate = function() {
-            // Check límite seguridad
             if (Object.keys(customRates).length >= MAX_CUSTOM_RATES) {
                 showMessage("Límite de tasas alcanzado.", 3000);
                 return;
@@ -705,62 +906,58 @@
             const name = nameInput.value.trim().toUpperCase();
             const value = parseFloat(valueInput.value);
 
-            // Validación Nombre
             if (!name) {
                 showMessage("Por favor, ingresa un nombre para la tasa.", 3000);
                 return;
             }
             
-            // MODIFICACIÓN: Nombre Único
-            // Verificar si el nombre ya existe en customs o en defaults
             if (customRates[name] || DEFAULT_CURRENCIES.includes(name)) {
                 showMessage("Ya existe una tasa con ese nombre. Usa uno diferente.", 3000);
                 return;
             }
 
-            // Validación Valor
             if (isNaN(value) || value <= 0) {
                 showMessage("Por favor, ingresa un valor numérico válido mayor a 0.", 3000);
                 return;
             }
             
-            // MODIFICACIÓN: Límite de 4 dígitos (Max 9999)
             if (value > 9999) {
                 showMessage("El valor no puede exceder 9999 (4 dígitos).", 3000);
                 return;
             }
 
-            // Guardar en objeto runtime de custom rates
             customRates[name] = {
                 value: value,
                 symbol: 'Bs',
                 conversion: value,
-                displaySymbol: selectedEmoji, // Guardar el Emoji seleccionado
+                displaySymbol: selectedEmoji, 
                 isCustom: true 
             };
 
-            // Persistir
             localStorage.setItem(CUSTOM_RATES_KEY, JSON.stringify(customRates));
-
             mergeRatesAndUpdateUI();
             
             closeModal('custom-rate-modal');
             showMessage(`Tasa personalizada "${name}" agregada.`, 3000);
             
-            // Seleccionar nueva tasa
-            document.getElementById('currency-display-select').value = name;
+            // Al crear, seleccionamos esa moneda en el visualizador
+            displayCurrency = name;
             updateDisplay(name, true);
         }
 
-        // --- Borrar Tasa ---
+        // --- Borrar Tasa y Sincronizar Selectores ---
         document.getElementById('confirm-delete-rate-btn').addEventListener('click', () => {
             if (pendingDeleteRateName && customRates[pendingDeleteRateName]) {
                 delete customRates[pendingDeleteRateName];
                 localStorage.setItem(CUSTOM_RATES_KEY, JSON.stringify(customRates));
                 
-                // Si la tasa borrada es la actual, volver a USD
-                if (currentCurrency === pendingDeleteRateName) {
-                    currentCurrency = 'USD';
+                // Si la tasa borrada es la actual en el Display, volver a USD
+                if (displayCurrency === pendingDeleteRateName) {
+                    displayCurrency = 'USD';
+                }
+                // Si la tasa borrada es la actual en el Conversor, volver a USD
+                if (converterCurrency === pendingDeleteRateName) {
+                    converterCurrency = 'USD';
                 }
 
                 mergeRatesAndUpdateUI();
@@ -770,28 +967,23 @@
             closeModal('delete-rate-confirm-modal');
         });
 
-
+        // --- Helper View/Edit History ---
         window.openEditModal = function(id) {
             editingHistoryId = id;
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const item = history.find(i => i.id === id);
-
             if (!item) return;
-
             const summary = item.input.length > 50 ? item.input.substring(0, 50) + '...' : item.input;
             document.getElementById('edit-modal-input-summary').textContent = `${summary}`;
-
             tagInput.value = item.tag || '';
             tagCharCount.textContent = tagInput.value.length;
             document.getElementById('payment-select').value = item.paymentMethod || ''; 
-
             document.getElementById('edit-tag-modal').style.display = 'flex';
         }
 
         window.openViewModal = function(id) {
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const item = history.find(i => i.id === id);
-
             if (!item) return;
             
             let rateUsedText = '';
@@ -834,31 +1026,21 @@
 
         function saveTag() {
             if (!editingHistoryId) return;
-
             const newTag = tagInput.value.trim().substring(0, 200);
             const newPaymentMethod = document.getElementById('payment-select').value; 
-            
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
-            
             history = history.map(item => {
                 if (item.id === editingHistoryId) {
-                    return { 
-                        ...item, 
-                        tag: newTag,
-                        paymentMethod: newPaymentMethod
-                    };
+                    return { ...item, tag: newTag, paymentMethod: newPaymentMethod };
                 }
                 return item;
             });
-
             localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
             editingHistoryId = null;
             closeModal('edit-tag-modal');
             loadHistory();
-            showMessage(`Etiqueta guardada como: ${newTag || 'vacía'}`, 3000);
+            showMessage(`Etiqueta guardada.`, 3000);
         }
-        
-        // --- Lógica de Eliminación con Confirmación ---
         
         function deleteHistoryItem(id) {
             pendingDeleteId = id;
@@ -867,51 +1049,33 @@
 
         function confirmDelete() {
             if (!pendingDeleteId) return;
-
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             history = history.filter(item => item.id !== pendingDeleteId);
             localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-            
             pendingDeleteId = null;
             closeModal('delete-confirm-modal');
             loadHistory();
             showMessage("Conversión eliminada del historial.", 3000);
         }
 
-        function clearHistory() {
-            localStorage.removeItem(HISTORY_KEY);
-            loadHistory();
-            showMessage("¡Historial de conversiones limpiado!", 3000);
-            settingsMenu.style.display = 'none';
-            gearIcon.classList.remove('active');
-        }
-
         // --- Lógica de Conversión y Historial ---
 
         function evaluateExpression(expression) {
             const safeExpression = expression.replace(/,/g, '').replace(/[^0-9.+-]/g, '').replace(/\s/g, '');
-
             if (!safeExpression) return null;
-
             if (!/[+-]/.test(safeExpression)) {
                 const num = parseFloat(safeExpression);
                 return isNaN(num) ? null : num;
             }
-
             try {
                 const result = new Function('return ' + safeExpression)();
-                if (isNaN(result) || !isFinite(result)) {
-                    return null;
-                }
+                if (isNaN(result) || !isFinite(result)) return null;
                 return result;
-            } catch (e) {
-                return null;
-            }
+            } catch (e) { return null; }
         }
 
         function convertCurrency() {
             const amountInput = document.getElementById('amount-input');
-            const currencySelect = document.getElementById('currency-select');
             const conversionResultDiv = document.getElementById('conversion-result');
             const convertedValueDiv = document.getElementById('converted-value');
             
@@ -919,21 +1083,17 @@
             const evaluatedAmount = evaluateExpression(rawInput);
             
             if (evaluatedAmount === null || evaluatedAmount <= 0) {
-                showMessage("Por favor, ingrese una cantidad o expresión válida (ej: 100+50-10).", 3000);
+                showMessage("Por favor, ingrese una cantidad válida.", 3000);
                 conversionResultDiv.classList.add('hidden');
                 return;
             }
             
-            if (rawInput !== evaluatedAmount.toString() && rawInput !== evaluatedAmount.toFixed(2) && /[+-]/.test(rawInput)) {
-                 showMessage(`Expresión: ${rawInput} = ${evaluatedAmount.toFixed(2)}`, 1500);
-            }
-
             const amount = evaluatedAmount; 
-            const currency = currencySelect.value;
-            const rateInfo = rates[currency];
+            // Usar la moneda seleccionada en el conversor (no la de display)
+            const rateInfo = rates[converterCurrency];
 
             if (!rateInfo) {
-                showMessage("La tasa no está cargada. Por favor, espere a que se actualice o recargue la página.", 3000);
+                showMessage("La tasa no está cargada.", 3000);
                 conversionResultDiv.classList.add('hidden');
                 return;
             }
@@ -942,16 +1102,18 @@
             let fromCurrency, toCurrency, fromSymbol, toSymbol;
 
             if (conversionDirection === 'bs-to-currency') {
+                // Bs -> Divisa: Dividir
                 convertedValue = (amount / rateInfo.value);
                 fromCurrency = 'Bolívares';
-                toCurrency = currency;
+                toCurrency = converterCurrency;
                 fromSymbol = 'Bs';
-                toSymbol = rateInfo.displaySymbol; // displaySymbol ahora tiene el Emoji si es custom
+                toSymbol = rateInfo.displaySymbol; 
             } else {
+                // Divisa -> Bs: Multiplicar
                 convertedValue = (amount * rateInfo.value);
-                fromCurrency = currency;
+                fromCurrency = converterCurrency;
                 toCurrency = 'Bolívares';
-                fromSymbol = rateInfo.displaySymbol; // displaySymbol ahora tiene el Emoji si es custom
+                fromSymbol = rateInfo.displaySymbol; 
                 toSymbol = 'Bs';
             }
             
@@ -961,6 +1123,7 @@
             });
             
             convertedValueDiv.textContent = `${toSymbol} ${formattedConvertedValue}`;
+            document.getElementById('conversion-direction-text').textContent = `${fromCurrency} ➔ ${toCurrency}`;
 
             saveConversionToHistory(rawInput, fromCurrency, toCurrency, formattedConvertedValue, fromSymbol, toSymbol, convertedValue.toFixed(2), rateInfo.value, rateInfo.displaySymbol);
             conversionResultDiv.classList.remove('hidden');
@@ -970,17 +1133,13 @@
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const timestamp = new Date().toLocaleString('es-VE');
 
-            const fromSelect = document.getElementById('currency-select');
-            const fromCurrencyName = fromCurrency === 'Bolívares' ? fromCurrency : fromSelect.options[fromSelect.selectedIndex].text.trim();
-            const toCurrencyName = toCurrency === 'Bolívares' ? toCurrency : fromSelect.options[fromSelect.selectedIndex].text.trim();
-
             const newItem = { 
                 id: crypto.randomUUID(), 
                 input: rawInput, 
                 result: result, 
                 numericResult: numericResult,
-                fromCurrency: fromCurrencyName, 
-                toCurrency: toCurrencyName, 
+                fromCurrency: fromCurrency, 
+                toCurrency: toCurrency, 
                 timestamp: timestamp, 
                 fromSymbol: fromSymbol, 
                 toSymbol: toSymbol,
@@ -990,9 +1149,7 @@
                 paymentMethod: "" 
             };
             history.unshift(newItem);
-            if (history.length > 25) { 
-                history.pop();
-            }
+            if (history.length > 25) { history.pop(); }
             localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
             loadHistory();
         }
@@ -1014,7 +1171,6 @@
                 const tagDisplay = item.tag 
                     ? `<span class="bg-blue-800 text-blue-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.tag.split('\n')[0].substring(0, 40)}...</span>` 
                     : '';
-                
                 const paymentDisplay = item.paymentMethod 
                     ? `<span class="bg-purple-800 text-purple-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.paymentMethod}</span>`
                     : '';
@@ -1022,8 +1178,7 @@
                 listItem.innerHTML = `
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center space-x-2 mb-1">
-                            ${tagDisplay}
-                            ${paymentDisplay}
+                            ${tagDisplay} ${paymentDisplay}
                             <p class="text-xs text-gray-500">${item.timestamp}</p>
                         </div>
                         <p class="text-sm">
@@ -1031,18 +1186,15 @@
                             <span class="text-green-400 font-bold">${item.result} ${item.toSymbol}</span>
                         </p>
                     </div>
-
                     <div class="flex space-x-2 flex-shrink-0 mt-2 sm:mt-0">
                         ${item.tag || item.paymentMethod ? `
-                            <button onclick="openViewModal('${item.id}')" title="Ver detalle de etiqueta y tasas" class="view-details-btn hover:text-green-400">
+                            <button onclick="openViewModal('${item.id}')" title="Ver detalle" class="view-details-btn hover:text-green-400">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0m-0 -4v4"></path><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"></path></svg>
                             </button>
                         ` : ''}
-                        
                         <button onclick="openEditModal('${item.id}')" title="Etiquetar" class="edit-tag-btn hover:text-blue-400">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path><path d="M13.5 6.5l4 4"></path></svg>
                         </button>
-
                         <button onclick="deleteHistoryItem('${item.id}')" title="Eliminar" class="delete-history-item hover:text-red-500">
                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0m-0 -4v4"></path><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>
                         </button>
@@ -1052,51 +1204,8 @@
             });
         }
         
-        // --- Lógica de Tasas ---
-
-        function renderCurrencyOptions() {
-            const displaySelect = document.getElementById('currency-display-select');
-            const converterSelect = document.getElementById('currency-select');
-            
-            const currentDisplayVal = displaySelect.value;
-            const currentConverterVal = converterSelect.value;
-
-            displaySelect.innerHTML = '';
-            converterSelect.innerHTML = '';
-
-            const allRatesKeys = Object.keys(rates);
-            
-            const orderedKeys = [...DEFAULT_CURRENCIES.filter(k => allRatesKeys.includes(k)), ...allRatesKeys.filter(k => !DEFAULT_CURRENCIES.includes(k))];
-
-            orderedKeys.forEach(key => {
-                const rate = rates[key];
-                let label = '';
-                
-                if (key === 'USD') label = `🇺🇸 Dólar (${key})`;
-                else if (key === 'EUR') label = `🇪🇺 Euro (${key})`;
-                else if (key === 'USDT') label = `₮ USDT (Tether)`;
-                else label = `${rate.displaySymbol} ${key}`; // MODIFICADO: Usar el emoji si es custom
-
-                const option1 = document.createElement('option');
-                option1.value = key;
-                option1.textContent = label;
-                
-                const option2 = option1.cloneNode(true);
-
-                displaySelect.appendChild(option1);
-                converterSelect.appendChild(option2);
-            });
-
-            if (orderedKeys.includes(currentDisplayVal)) displaySelect.value = currentDisplayVal;
-            else displaySelect.value = 'USD';
-
-            if (orderedKeys.includes(currentConverterVal)) converterSelect.value = currentConverterVal;
-            else converterSelect.value = 'USD';
-        }
-
         function mergeRatesAndUpdateUI(defaultData = null) {
             let baseRates = defaultData ? defaultData.rates : rates;
-
             rates = { ...baseRates, ...customRates };
             
             if (defaultData) {
@@ -1106,12 +1215,11 @@
                 document.getElementById('last-updated').textContent = formattedDate;
             }
 
-            renderCurrencyOptions();
-            
-            // Actualizar menú de ajustes con lista de tasas
+            // Actualizar textos de los triggers personalizados
+            updateSelectTriggers();
             updateSettingsMenu();
             
-            updateDisplay(currentCurrency, !!defaultData);
+            updateDisplay(displayCurrency, !!defaultData);
             
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
@@ -1128,7 +1236,8 @@
             const customNotice = document.getElementById('custom-notice'); 
             const sourceTextElement = document.getElementById('source-text');
             
-            currentCurrency = currency;
+            // displayCurrency ya está seteado, pero aseguramos
+            displayCurrency = currency;
             
             usdtNotice.classList.add('hidden');
             customNotice.classList.add('hidden');
@@ -1148,56 +1257,40 @@
                     minimumFractionDigits: 2, 
                     maximumFractionDigits: 2 
                 });
-
                 currencyRateElement.textContent = `Bs ${formattedRate}`;
-                
-                if (isUpdate) {
-                    applyFlashEffect();
-                }
-                
-                const displaySelect = document.getElementById('currency-display-select');
-                if (displaySelect.value !== currency) displaySelect.value = currency;
-                document.getElementById('currency-select').value = currency;
+                if (isUpdate) applyFlashEffect();
             }
+            updateSelectTriggers();
+        }
+
+        // Nueva función para actualizar solo la parte del conversor cuando cambia su moneda
+        function updateConverterUI() {
+            updateConversionInputPlaceholder();
+            updateSelectTriggers();
         }
 
         function updateConversionInputPlaceholder() {
             const amountInput = document.getElementById('amount-input');
-            const currencySelect = document.getElementById('currency-select');
-            
-            if (!currencySelect.value) return;
+            const rateInfo = rates[converterCurrency];
 
-            const rateInfo = rates[currencySelect.value];
-            const currencyLabel = currencySelect.options[currencySelect.selectedIndex].text.split(' ')[0]; 
+            if (!rateInfo) return;
 
             if (conversionDirection === 'bs-to-currency') {
-                amountInput.placeholder = 'Cantidad en Bolívares (Bs) (ej: 1000+50-10)';
+                amountInput.placeholder = 'Cantidad en Bolívares (Bs)';
             } else {
-                amountInput.placeholder = `Cantidad en ${currencyLabel} (${rateInfo.displaySymbol}) (ej: 10+5-2.5)`;
+                amountInput.placeholder = `Cantidad en ${converterCurrency} (${rateInfo.displaySymbol})`;
             }
         }
 
         function detectDevice() {
             const deviceIconContainer = document.getElementById('device-icon');
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-            
             let iconHtml = '';
             if (isMobile) {
-                iconHtml = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    Móvil
-                `;
+                iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>Móvil`;
             } else {
-                iconHtml = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    PC
-                `;
+                iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>PC`;
             }
-            
             deviceIconContainer.innerHTML = iconHtml;
             deviceIconContainer.classList.remove('hidden');
         }
@@ -1210,9 +1303,9 @@
 
              const data = {
                  rates: {
-                     'USD': { value: 251.88, symbol: 'Bs', conversion: 251.88, displaySymbol: '$' }, 
-                     'EUR': { value: 293.88, symbol: 'Bs', conversion: 293.88, displaySymbol: '€' },
-                     'USDT': { value: 360.59, symbol: 'Bs', conversion: 400.59, displaySymbol: '₮' },
+                     'USD': { value: 249.19, symbol: 'Bs', conversion: 244.30, displaySymbol: '$' }, 
+                     'EUR': { value: 289.16, symbol: 'Bs', conversion: 286.40, displaySymbol: '€' },
+                     'USDT': { value: 400.59, symbol: 'Bs', conversion: 400.59, displaySymbol: '₮' },
                  },
                  timestamp: Date.now() 
              };
@@ -1220,53 +1313,42 @@
              if (!isManualUpdate && DEFAULT_CURRENCIES.includes(currentCurrency)) {
                  document.getElementById('loading').classList.remove('hidden');
                  document.getElementById('rate-display').classList.add('hidden');
-                 
-                 setTimeout(() => {
-                     updateUIWithRates(data, isManualUpdate);
-                 }, 800); 
+                 setTimeout(() => { updateUIWithRates(data, isManualUpdate); }, 800); 
              } else {
                  updateUIWithRates(data, isManualUpdate);
              }
         }
         
         // --- Event Listeners ---
-        
         document.getElementById('convert-btn').addEventListener('click', convertCurrency);
         document.getElementById('copy-btn').addEventListener('click', copyToClipboard);
-        document.getElementById('clear-history-btn').addEventListener('click', clearHistory); 
         document.getElementById('show-time-btn').addEventListener('click', () => {
             const now = new Date();
             const timeString = now.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
             showMessage(`Hora actual: ${timeString}`, 5000);
         });
         document.getElementById('refresh-page-btn').addEventListener('click', () => { window.location.reload(); });
-        
         document.getElementById('refresh-btn').addEventListener('click', (e) => {
             e.preventDefault();
             document.getElementById('refresh-btn').innerText = "Refrescando...";
-            setTimeout(() => {
-                window.location.reload();
-            }, 300);
+            setTimeout(() => { window.location.reload(); }, 300);
         });
 
-        document.getElementById('conversion-toggle-btn').addEventListener('click', () => {
-            const toggleIcon = document.getElementById('toggle-icon');
+        // Toggle mejorado (Swap Button)
+        document.getElementById('swap-conversion-btn').addEventListener('click', () => {
+            const btn = document.getElementById('swap-conversion-btn');
+            // Animación rotación
+            btn.style.transform = btn.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+
             if (conversionDirection === 'currency-to-bs') {
-                document.getElementById('toggle-text').textContent = 'Bolívares a Divisa';
-                toggleIcon.style.transform = 'rotate(180deg)';
                 conversionDirection = 'bs-to-currency';
             } else {
-                document.getElementById('toggle-text').textContent = 'Divisa a Bolívares';
-                toggleIcon.style.transform = 'rotate(0deg)';
                 conversionDirection = 'currency-to-bs';
             }
             updateConversionInputPlaceholder();
+            // Limpiar resultado anterior para evitar confusiones
+            document.getElementById('conversion-result').classList.add('hidden');
         });
-
-        document.getElementById('currency-display-select').addEventListener('change', (event) => {
-            updateDisplay(event.target.value, true); 
-        });
-        document.getElementById('currency-select').addEventListener('change', updateConversionInputPlaceholder);
         
         settingsBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -1277,13 +1359,9 @@
 
         document.getElementById('save-tag-btn').addEventListener('click', saveTag);
         document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
-        
         document.getElementById('add-custom-rate-btn').addEventListener('click', openCustomRateModal);
         document.getElementById('save-custom-rate-btn').addEventListener('click', saveCustomRate);
-
-        tagInput.addEventListener('input', () => {
-            tagCharCount.textContent = tagInput.value.length;
-        });
+        tagInput.addEventListener('input', () => { tagCharCount.textContent = tagInput.value.length; });
 
         window.onload = () => {
             detectDevice();
@@ -1291,9 +1369,7 @@
             loadHistory();
             updateConversionInputPlaceholder();
         };
-        
         window.onresize = detectDevice;
     </script>
 </body>
 </html>
-
