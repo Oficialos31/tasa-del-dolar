@@ -8,7 +8,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
         
-        /* Base styles for themes */
         .theme-dark {
             --bg-color: #0d1117;
             --text-color: #c9d1d9;
@@ -235,7 +234,6 @@
             pointer-events: none;
         }
 
-        /* Estilos para el nuevo Toggle Button central con $ y Bs */
         .swap-container {
             position: relative;
             height: 1rem;
@@ -256,7 +254,7 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.5s ease, border-color 0.2s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             font-weight: bold;
             font-size: 0.8rem;
@@ -266,6 +264,14 @@
             border-color: var(--accent-color);
             transform: scale(1.1);
         }
+        
+        .swap-btn.rotated {
+            transform: rotate(180deg) scale(1.1);
+        }
+        
+        .swap-btn > span { transition: transform 0.5s ease; }
+        .swap-btn.rotated > span { transform: rotate(-180deg); }
+
         .swap-btn .icon-top { margin-bottom: 2px; }
         .swap-btn .icon-bottom { margin-top: 2px; }
 
@@ -290,7 +296,6 @@
         }
         .currency-icon { font-size: 1.5rem; margin-right: 1rem; }
 
-        /* Icono de ayuda en input */
         .input-wrapper { position: relative; width: 100%; }
         .help-icon-btn {
             position: absolute;
@@ -322,25 +327,35 @@
                 <div id="custom-rates-list"></div>
             </div>
 
+            <!-- ORDEN REAJUSTADO -->
+            <!-- 1. Añadir Tasa -->
             <button id="add-custom-rate-btn" class="config-button text-green-400 font-semibold border border-gray-700 hover:border-green-400">
                 Añadir Tasa Personalizada
             </button>
             <p id="max-rates-msg" class="text-xs text-red-400 text-center hidden">Máximo 2 tasas alcanzado</p>
 
-            <button id="show-time-btn" class="config-button">
-                Ver Hora
-            </button>
-            <button id="clear-history-btn" class="config-button text-red-400">
-                Limpiar Historial
-            </button>
+            <!-- 2. Refrescar -->
             <button id="refresh-page-btn" class="config-button">
                 Refrescar
             </button>
+
+            <!-- 3. Ver Hora -->
+            <button id="show-time-btn" class="config-button">
+                Ver Hora
+            </button>
+
+            <!-- 4. Limpiar Historial -->
+            <button id="clear-history-btn" class="config-button text-red-400">
+                Limpiar Historial
+            </button>
             
-            <!-- NUEVO BOTÓN INFORMACIÓN -->
+            <!-- 5. Información -->
             <button id="app-info-btn" class="config-button text-blue-400 border border-gray-700 hover:border-blue-400">
                 Información
             </button>
+            <div class="text-center text-sm text-gray-500 pt-2">
+                Versión: <span id="app-version">1.0.0</span>
+            </div>
         </div>
     </div>
 
@@ -413,7 +428,6 @@
             <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
             
             <div class="flex flex-col space-y-2 mb-4 items-center justify-center relative">
-                <!-- Input Cantidad con Botón de Ayuda (i) -->
                 <div class="input-wrapper">
                     <input 
                         type="text" 
@@ -428,16 +442,13 @@
                     </button>
                 </div>
                 
-                <!-- Botón de Swap con $ y Bs -->
                 <div class="swap-container w-full">
                     <button id="swap-conversion-btn" class="swap-btn" title="Invertir Conversión">
-                        <!-- Icono inicial (Divisa arriba, Bs abajo) -->
-                        <span class="icon-top text-lg">$</span>
-                        <span class="icon-bottom text-xs">Bs</span>
+                        <span class="icon-top text-lg text-green-400">$</span>
+                        <span class="icon-bottom text-base text-green-400">Bs</span>
                     </button>
                 </div>
 
-                <!-- Selector de Moneda Conversor -->
                 <div id="converter-select-trigger" class="custom-select-trigger w-full p-3" onclick="openCurrencySelector('converter')">
                     <span id="converter-select-text">Seleccionar Moneda...</span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
@@ -625,7 +636,14 @@
     </div>
     
     <script>
-        let rates = {};
+        // Tasas por defecto fijas para reconstrucción limpia
+        const baseDefaultRates = {
+            'USD': { value: 251.88, symbol: 'Bs', conversion: 251.88, displaySymbol: '$' },
+            'EUR': { value: 293.88, symbol: 'Bs', conversion: 293.88, displaySymbol: '€' },
+            'USDT': { value: 377.65, symbol: 'Bs', conversion: 377.65, displaySymbol: '₮' }
+        };
+
+        let rates = {}; // Se llenará en initRates y mergeRates
         const DEFAULT_CURRENCIES = ['USD', 'EUR', 'USDT'];
         let customRates = {}; 
         const MAX_CUSTOM_RATES = 2;
@@ -670,21 +688,17 @@
             }, duration);
         }
 
-        // COPIAR AL PORTAPAPELES (LOGICA MEJORADA)
+        // COPIAR AL PORTAPAPELES
         function copyToClipboard() {
             const rateInfo = rates[displayCurrency];
-            // Texto limpio del monto (ej: "250.00")
             const rawRateText = currencyRateElement.textContent.trim().split(' ')[1]; 
-            // Texto para copiar (sin comas de miles para que sea número válido)
             const valueToCopy = rawRateText.replace(/,/g, ''); 
             
             let clipboardText = "";
 
             if (rateInfo && rateInfo.isCustom) {
-                // Formato Personalizado
                 clipboardText = `Tasa VE Mi Tasa Personalizada de Usuario es ${displayCurrency} es de ${rawRateText}`;
             } else {
-                // Formato Oficial
                 clipboardText = `Tasa VE: El valor Actual ${displayCurrency} es ${rawRateText}`;
             }
 
@@ -719,17 +733,14 @@
             }
         });
 
-        // --- CIERRE AL HACER CLICK FUERA (GESTIÓN DE VENTANAS) ---
+        // --- CIERRE AL HACER CLICK FUERA ---
         window.onclick = function(event) {
-            // Si se hace click en el fondo oscuro de un modal
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = "none";
                 if (event.target.id === 'clear-history-confirm-modal') {
                     clearInterval(clearHistoryInterval);
                 }
             }
-            
-            // Si se hace click fuera del menú de ajustes, cerrarlo
             if (!event.target.closest('#settings-menu') && !event.target.closest('#settings-btn')) {
                 if (settingsMenu.style.display === 'block') {
                     settingsMenu.style.display = 'none';
@@ -738,11 +749,9 @@
             }
         }
 
-        // --- Helper para Cerrar TODO (Exclusividad) ---
         function closeAllMenus() {
             settingsMenu.style.display = 'none';
             gearIcon.classList.remove('active');
-            // Aquí se podrían cerrar otros menús flotantes si existieran
         }
 
         emojiOptions.forEach(option => {
@@ -760,20 +769,18 @@
             }
         }
 
-        // Abrir Modal de Ayuda
         window.openHelpModal = function() {
-            closeAllMenus(); // Cerrar ajustes si está abierto
+            closeAllMenus();
             document.getElementById('help-modal').style.display = 'flex';
         }
 
-        // Abrir Modal de Info App
         document.getElementById('app-info-btn').addEventListener('click', () => {
             closeAllMenus();
             document.getElementById('app-info-modal').style.display = 'flex';
         });
 
         window.openCurrencySelector = function(context) {
-            closeAllMenus(); // Exclusividad: Cierra ajustes al abrir selector
+            closeAllMenus(); 
             activeSelectorContext = context; 
             const listContainer = document.getElementById('currency-options-list');
             listContainer.innerHTML = ''; 
@@ -992,13 +999,14 @@
                 if (displayCurrency === pendingDeleteRateName) displayCurrency = 'USD';
                 if (converterCurrency === pendingDeleteRateName) converterCurrency = 'USD';
 
-                mergeRatesAndUpdateUI();
+                mergeRatesAndUpdateUI(); // Reconstruye todas las listas sin la tasa borrada
                 showMessage(`Tasa "${pendingDeleteRateName}" eliminada.`, 3000);
             }
             pendingDeleteRateName = null;
             closeModal('delete-rate-confirm-modal');
         });
 
+        // --- Helper View/Edit History ---
         window.openEditModal = function(id) {
             closeAllMenus();
             editingHistoryId = id;
@@ -1233,8 +1241,9 @@
         }
         
         function mergeRatesAndUpdateUI(defaultData = null) {
-            let baseRates = defaultData ? defaultData.rates : rates;
-            rates = { ...baseRates, ...customRates };
+            let currentBaseRates = defaultData ? defaultData.rates : baseDefaultRates;
+            // CRITICAL FIX: Always re-merge from base + custom to ensure deletions are reflected
+            rates = { ...currentBaseRates, ...customRates };
             
             if (defaultData) {
                 const formattedDate = new Intl.DateTimeFormat('es-VE', {
@@ -1263,6 +1272,9 @@
             const sourceTextElement = document.getElementById('source-text');
             
             displayCurrency = currency;
+            
+            converterCurrency = currency;
+            updateConverterUI();
             
             usdtNotice.classList.add('hidden');
             customNotice.classList.add('hidden');
@@ -1327,9 +1339,9 @@
 
              const data = {
                  rates: {
-                     'USD': { value: 251.88, symbol: 'Bs', conversion: 251.88, displaySymbol: '$' }, 
-                     'EUR': { value: 293.88, symbol: 'Bs', conversion: 293.88, displaySymbol: '€' },
-                     'USDT': { value: 377.65, symbol: 'Bs', conversion: 377.65, displaySymbol: '₮' },
+                     'USD': { value: 254.87, symbol: 'Bs', conversion: 254.87, displaySymbol: '$' }, 
+                     'EUR': { value: 297.37, symbol: 'Bs', conversion: 297.37, displaySymbol: '€' },
+                     'USDT': { value: 381.75, symbol: 'Bs', conversion: 381.75, displaySymbol: '₮' },
                  },
                  timestamp: Date.now() 
              };
@@ -1360,7 +1372,7 @@
 
         document.getElementById('swap-conversion-btn').addEventListener('click', () => {
             const btn = document.getElementById('swap-conversion-btn');
-            btn.style.transform = btn.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+            btn.classList.toggle('rotated');
 
             if (conversionDirection === 'currency-to-bs') {
                 conversionDirection = 'bs-to-currency';
@@ -1377,7 +1389,6 @@
             if (isMenuOpen) {
                 closeAllMenus();
             } else {
-                // Cerrar todo antes de abrir
                 closeAllMenus(); 
                 settingsMenu.style.display = 'block';
                 gearIcon.classList.add('active');
@@ -1400,4 +1411,3 @@
     </script>
 </body>
 </html>
-
