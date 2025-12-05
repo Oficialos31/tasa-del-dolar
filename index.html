@@ -609,6 +609,7 @@
             <h3 class="text-xl font-bold mb-4 text-green-400">Guía del Conversor</h3>
             <ul class="list-disc list-inside text-gray-300 space-y-3 text-sm text-left">
                 <li><strong>Monto Simple:</strong> Escribe el número que deseas convertir (ej: <code>500</code>).</li>
+                <li><strong>Formatos Inteligentes:</strong> Soporta puntos y comas. Ej: <code>10.324,45</code> o <code>10.324.45</code> se leen correctamente como diez mil.</li>
                 <li><strong>Cálculos Rápidos:</strong> Puedes usar sumas y restas directamente (ej: <code>100+50-20</code>) y el sistema calculará el total.</li>
                 <li><strong>Historial y Etiquetas:</strong> Cada conversión se guarda en el historial de abajo. Usa el icono de etiqueta (🏷️) para añadir notas o indicar si pagaste con PagoMovil, Efectivo, etc.</li>
             </ul>
@@ -636,14 +637,13 @@
     </div>
     
     <script>
-        // Tasas por defecto fijas para reconstrucción limpia
         const baseDefaultRates = {
             'USD': { value: 251.88, symbol: 'Bs', conversion: 251.88, displaySymbol: '$' },
             'EUR': { value: 293.88, symbol: 'Bs', conversion: 293.88, displaySymbol: '€' },
             'USDT': { value: 377.65, symbol: 'Bs', conversion: 377.65, displaySymbol: '₮' }
         };
 
-        let rates = {}; // Se llenará en initRates y mergeRates
+        let rates = {}; 
         const DEFAULT_CURRENCIES = ['USD', 'EUR', 'USDT'];
         let customRates = {}; 
         const MAX_CUSTOM_RATES = 2;
@@ -688,7 +688,6 @@
             }, duration);
         }
 
-        // COPIAR AL PORTAPAPELES
         function copyToClipboard() {
             const rateInfo = rates[displayCurrency];
             const rawRateText = currencyRateElement.textContent.trim().split(' ')[1]; 
@@ -719,7 +718,6 @@
             setTimeout(() => { currencyRateElement.classList.remove('rate-flash'); }, 800);
         }
 
-        // --- Cierre de Teclado en Móvil ---
         document.addEventListener('click', (e) => {
             const target = e.target;
             const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
@@ -733,7 +731,6 @@
             }
         });
 
-        // --- CIERRE AL HACER CLICK FUERA ---
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = "none";
@@ -999,14 +996,13 @@
                 if (displayCurrency === pendingDeleteRateName) displayCurrency = 'USD';
                 if (converterCurrency === pendingDeleteRateName) converterCurrency = 'USD';
 
-                mergeRatesAndUpdateUI(); // Reconstruye todas las listas sin la tasa borrada
+                mergeRatesAndUpdateUI(); 
                 showMessage(`Tasa "${pendingDeleteRateName}" eliminada.`, 3000);
             }
             pendingDeleteRateName = null;
             closeModal('delete-rate-confirm-modal');
         });
 
-        // --- Helper View/Edit History ---
         window.openEditModal = function(id) {
             closeAllMenus();
             editingHistoryId = id;
@@ -1100,17 +1096,43 @@
         }
 
         function evaluateExpression(expression) {
-            const safeExpression = expression.replace(/,/g, '').replace(/[^0-9.+-]/g, '').replace(/\s/g, '');
-            if (!safeExpression) return null;
-            if (!/[+-]/.test(safeExpression)) {
-                const num = parseFloat(safeExpression);
-                return isNaN(num) ? null : num;
+            // Eliminar espacios
+            const cleanExp = expression.replace(/\s/g, '');
+            
+            // Separar números y operadores (+, -)
+            const parts = cleanExp.split(/([+-])/);
+            
+            let total = 0;
+            let currentOp = '+';
+            
+            for (let part of parts) {
+                if (part === '+' || part === '-') {
+                    currentOp = part;
+                } else if (part.length > 0) {
+                    let numStr = part;
+                    
+                    // Lógica inteligente de formatos numéricos
+                    // Caso 1: Tiene coma (10.324,45) -> Es formato VE/EU
+                    if (numStr.includes(',')) {
+                        numStr = numStr.replace(/\./g, ''); // Quitar puntos de miles
+                        numStr = numStr.replace(',', '.');  // Cambiar coma decimal a punto
+                    } 
+                    // Caso 2: Tiene múltiples puntos (10.324.45) -> Usuario usa punto para todo
+                    // Asumimos que el último punto es el decimal y los anteriores son miles
+                    else if ((numStr.match(/\./g) || []).length > 1) {
+                        // Regex: Reemplaza puntos que estén seguidos por otro punto más adelante
+                        numStr = numStr.replace(/\.(?=.*\.)/g, '');
+                    }
+                    // Caso 3: Un solo punto (10.50) -> Estándar JS, se deja igual
+                    
+                    const val = parseFloat(numStr);
+                    if (!isNaN(val)) {
+                        if (currentOp === '+') total += val;
+                        else total -= val;
+                    }
+                }
             }
-            try {
-                const result = new Function('return ' + safeExpression)();
-                if (isNaN(result) || !isFinite(result)) return null;
-                return result;
-            } catch (e) { return null; }
+            return total;
         }
 
         function convertCurrency() {
@@ -1121,7 +1143,7 @@
             const rawInput = amountInput.value.trim();
             const evaluatedAmount = evaluateExpression(rawInput);
             
-            if (evaluatedAmount === null || evaluatedAmount <= 0) {
+            if (evaluatedAmount === null || evaluatedAmount < 0) { // Permitir 0, pero no negativos por lógica de divisa
                 showMessage("Ingrese una cantidad válida.", 3000);
                 conversionResultDiv.classList.add('hidden');
                 return;
@@ -1339,9 +1361,9 @@
 
              const data = {
                  rates: {
-                     'USD': { value: 254.87, symbol: 'Bs', conversion: 254.87, displaySymbol: '$' }, 
-                     'EUR': { value: 297.37, symbol: 'Bs', conversion: 297.37, displaySymbol: '€' },
-                     'USDT': { value: 381.75, symbol: 'Bs', conversion: 381.75, displaySymbol: '₮' },
+                     'USD': { value: 251.88, symbol: 'Bs', conversion: 251.88, displaySymbol: '$' }, 
+                     'EUR': { value: 293.88, symbol: 'Bs', conversion: 293.88, displaySymbol: '€' },
+                     'USDT': { value: 377.65, symbol: 'Bs', conversion: 377.65, displaySymbol: '₮' },
                  },
                  timestamp: Date.now() 
              };
