@@ -5,18 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasa VE - Conversor</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importar fuente navideña y la original -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Mountains+of+Christmas:wght@700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        
-        .theme-dark {
+        /* --- ESTILOS BASE (ORIGINALES) --- */
+        :root {
             --bg-color: #0d1117;
             --text-color: #c9d1d9;
             --card-bg: #161b22;
             --border-color: #30363d;
-            --accent-color: #10B981;
+            --accent-color: #10B981; /* Verde Original */
+            --secondary-accent: #3b82f6; /* Azul */
             --secondary-text: #8b949e;
-            --gradient-start: #10B981;
-            --gradient-end: #059669;
+            --highlight-text: #10B981; /* Texto verde original */
+        }
+
+        /* --- ESTILOS NAVIDEÑOS (SOBREESCRIBEN SI ESTÁ ACTIVO) --- */
+        body.christmas-theme {
+            --accent-color: #ef4444; /* Rojo Navidad */
+            --secondary-accent: #10B981; /* Verde Pino */
+            --highlight-text: #ef4444; /* Rojo para titulos festivos */
+            /* Fondo con toque navideño sutil */
+            background: linear-gradient(180deg, #0f172a 0%, #061806 100%);
         }
 
         body {
@@ -25,25 +36,50 @@
             color: var(--text-color);
             min-height: 100vh;
             padding: 0;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background 0.5s ease, color 0.3s ease;
             -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            position: relative;
         }
         
-        .card { background-color: var(--card-bg); }
-        .border-gray-700 { border-color: var(--border-color); }
-        .text-green-400 { color: var(--accent-color); }
+        /* Fuente Navideña (Solo se aplica si el tema está activo y tiene la clase) */
+        body.christmas-theme .christmas-font {
+            font-family: 'Mountains of Christmas', cursive;
+            letter-spacing: 1px;
+        }
+
+        /* --- COMPONENTES UI --- */
+        .card { 
+            background-color: var(--card-bg); 
+            border: 1px solid var(--border-color); 
+            transition: border-color 0.3s;
+        }
+        
+        body.christmas-theme .card {
+            border-color: #14532d; /* Borde verde oscuro en navidad */
+        }
+        
+        .text-green-dynamic { color: #10B981; } /* Siempre verde para dinero */
+        .text-theme-dynamic { color: var(--highlight-text); }
         .text-gray-400 { color: var(--secondary-text); }
         
+        /* Botón Gradiente Dinámico */
         .gradient-button {
-            background-image: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+            background-image: linear-gradient(to right, #10B981, #059669); /* Original */
             box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
             transition: all 0.3s ease;
+            color: white;
+        }
+
+        body.christmas-theme .gradient-button {
+            background-image: linear-gradient(to right, #dc2626, #166534); /* Navideño */
+            box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
+            border: 1px solid #fca5a5;
         }
 
         .gradient-button:hover {
-            background-image: linear-gradient(to right, var(--gradient-end), var(--gradient-start));
-            box-shadow: 0 6px 12px rgba(16, 185, 129, 0.4);
             transform: translateY(-2px);
+            filter: brightness(110%);
         }
 
         .converter-input, .modal-textarea, .custom-select-trigger {
@@ -63,11 +99,17 @@
             justify-content: space-between;
             align-items: center;
             user-select: none;
+            touch-action: pan-y; /* Permitir scroll vertical normal fuera del área de swipe */
         }
 
         .converter-input:hover, .custom-select-trigger:hover { border-color: var(--accent-color); }
         .converter-input:focus { border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
         
+        body.christmas-theme .converter-input:focus {
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        /* --- ANIMACIONES --- */
         .spinner {
             border: 4px solid var(--border-color);
             border-radius: 50%;
@@ -76,40 +118,25 @@
             height: 24px;
             animation: spin 1s linear infinite;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         @keyframes flash-rate {
             0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
             50% { box-shadow: 0 0 10px 5px rgba(16, 185, 129, 0.4); }
             100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
+        .rate-flash { animation: flash-rate 0.8s ease-out; }
 
-        .rate-flash {
-            animation: flash-rate 0.8s ease-out;
+        /* --- INTERRUPTOR (TOGGLE) --- */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #10B981;
         }
-
-        .delete-history-item, .edit-tag-btn, .view-details-btn {
-            color: var(--secondary-text);
-            transition: transform 0.2s ease;
-            padding: 0.3rem;
-            border-radius: 50%;
-        }
-
-        .delete-history-item { color: #EF4444; background-color: transparent; }
-        .edit-tag-btn:hover { color: #3B82F6; } 
-        .view-details-btn:hover { color: #10B981; } 
-        .delete-history-item:hover { color: #DC2626; transform: scale(1.1); }
-        
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #10B981;
         }
         
+        /* --- AJUSTES MENU --- */
         #settings-menu {
             position: absolute;
             top: 65px;
@@ -117,12 +144,13 @@
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 0.75rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
             z-index: 50;
             min-width: 250px;
             padding: 1rem;
             display: none;
         }
+        body.christmas-theme #settings-menu { border-color: #ef4444; }
 
         .config-button {
             background-color: var(--border-color);
@@ -133,7 +161,6 @@
             width: 100%;
             text-align: left;
         }
-        
         .config-button:hover { background-color: #3B4452; }
         
         .custom-rate-item {
@@ -157,6 +184,7 @@
             color: var(--text-color);
             border-radius: 0.5rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--accent-color);
             z-index: 1000;
             display: none;
             opacity: 0;
@@ -167,25 +195,28 @@
         }
         
         .gear-icon { transition: transform 0.3s ease-in-out; }
-        .gear-icon:hover, .gear-icon.active { transform: rotate(45deg); }
+        .gear-icon:hover, .gear-icon.active { transform: rotate(45deg); color: var(--accent-color); }
         .fixed-gear { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 100; }
 
+        /* --- MODALES --- */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.75);
+            background-color: rgba(0, 0, 0, 0.85);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            backdrop-filter: blur(2px);
         }
         .modal-content {
             background-color: var(--card-bg);
             border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--border-color);
             max-width: 90%;
             max-height: 90%;
             overflow: hidden;
@@ -228,12 +259,9 @@
             background-color: rgba(16, 185, 129, 0.1);
         }
         
-        .disabled-btn {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
-        }
+        .disabled-btn { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
+        /* --- BOTÓN SWAP --- */
         .swap-container {
             position: relative;
             height: 1rem;
@@ -244,10 +272,10 @@
         }
         .swap-btn {
             background-color: var(--card-bg);
-            border: 2px solid var(--border-color);
-            color: var(--accent-color);
-            width: 44px;
-            height: 44px;
+            border: 2px solid #10B981; /* Siempre Verde base */
+            color: #10B981;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
@@ -255,23 +283,19 @@
             align-items: center;
             cursor: pointer;
             transition: transform 0.5s ease, border-color 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
             font-weight: bold;
             font-size: 0.8rem;
             line-height: 1;
         }
         .swap-btn:hover {
-            border-color: var(--accent-color);
+            border-color: #fbbf24;
+            color: #fbbf24;
             transform: scale(1.1);
         }
-        
-        .swap-btn.rotated {
-            transform: rotate(180deg) scale(1.1);
-        }
-        
+        .swap-btn.rotated { transform: rotate(180deg) scale(1.1); }
         .swap-btn > span { transition: transform 0.5s ease; }
         .swap-btn.rotated > span { transform: rotate(-180deg); }
-
         .swap-btn .icon-top { margin-bottom: 2px; }
         .swap-btn .icon-bottom { margin-top: 2px; }
 
@@ -308,10 +332,83 @@
             transition: color 0.2s;
         }
         .help-icon-btn:hover { color: var(--accent-color); }
+
+        /* --- EFECTOS NAVIDAD 2025 --- */
+        #particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            display: none; /* Oculto por defecto, se activa con JS */
+        }
+        
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: #fff;
+            opacity: 0.8;
+            font-size: 10px;
+            animation-name: fall;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        .candy-cane-particle {
+            position: absolute;
+            top: -50px;
+            font-size: 24px;
+            animation-name: fall-rotate;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+
+        @keyframes fall { to { transform: translateY(105vh); } }
+        @keyframes fall-rotate {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            100% { transform: translateY(105vh) rotate(360deg); opacity: 0.5; }
+        }
+
+        /* --- SWITCH TOGGLE ESTILO --- */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            display: inline-block;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #374151;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #ef4444; } /* Rojo activado */
+        input:checked + .slider:before { transform: translateX(24px); }
     </style>
 </head>
-<body class="theme-dark">
+<body class="theme-dark"> <!-- theme-dark es base, christmas-theme se añade con JS -->
 
+    <!-- Contenedor de Partículas -->
+    <div id="particles-container"></div>
+
+    <!-- Configuración -->
     <div class="fixed-gear">
         <button id="settings-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 gear-icon" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -322,59 +419,55 @@
         </button>
         <div id="settings-menu" class="card rounded-xl p-4 flex flex-col space-y-4">
             
+            <!-- TOGGLE MODO NAVIDAD -->
+            <div class="flex justify-between items-center px-2 py-1 border-b border-gray-700 pb-3">
+                <span class="text-sm font-bold text-theme-dynamic christmas-font">Modo Navidad 🎄</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="christmas-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
             <div id="custom-rates-list-container" class="hidden">
                 <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Tus Tasas:</p>
                 <div id="custom-rates-list"></div>
             </div>
 
-            <!-- ORDEN REAJUSTADO -->
-            <!-- 1. Añadir Tasa -->
+            <!-- ORDEN SOLICITADO -->
             <button id="add-custom-rate-btn" class="config-button text-green-400 font-semibold border border-gray-700 hover:border-green-400">
                 Añadir Tasa Personalizada
             </button>
             <p id="max-rates-msg" class="text-xs text-red-400 text-center hidden">Máximo 2 tasas alcanzado</p>
 
-            <!-- 2. Refrescar -->
-            <button id="refresh-page-btn" class="config-button">
-                Refrescar
-            </button>
-
-            <!-- 3. Ver Hora -->
-            <button id="show-time-btn" class="config-button">
-                Ver Hora
-            </button>
-
-            <!-- 4. Limpiar Historial -->
-            <button id="clear-history-btn" class="config-button text-red-400">
-                Limpiar Historial
-            </button>
+            <button id="refresh-page-btn" class="config-button">Refrescar</button>
+            <button id="show-time-btn" class="config-button">Ver Hora</button>
+            <button id="clear-history-btn" class="config-button text-red-400">Limpiar Historial</button>
+            <button id="app-info-btn" class="config-button text-blue-400 border border-gray-700 hover:border-blue-400">Información</button>
             
-            <!-- 5. Información -->
-            <button id="app-info-btn" class="config-button text-blue-400 border border-gray-700 hover:border-blue-400">
-                Información
-            </button>
-            <div class="text-center text-sm text-gray-500 pt-2">
-                Versión: <span id="app-version">1.0.0</span>
+            <div class="text-center text-sm text-gray-500 pt-2 text-theme-dynamic christmas-font">
+                Update Navidad 2025
             </div>
         </div>
     </div>
 
-    <main id="main-container" class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section max-w-lg md:max-w-xl lg:max-w-2xl mx-auto">
+    <!-- Contenido Principal -->
+    <main id="main-container" class="w-full h-full min-h-screen p-6 md:p-8 text-center flex flex-col justify-center animate-fade-in-section max-w-lg md:max-w-xl lg:max-w-2xl mx-auto relative z-20">
         <div class="flex items-center justify-center space-x-2 w-full mb-4">
+            <!-- LOGO ORIGINAL (SVG) -->
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-400">
                 <path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM12 18.5C12 18.2239 11.7761 18 11.5 18H10.5C10.2239 18 10 17.7761 10 17.5V14.5C10 14.2239 10.2239 14 10.5 14H13.5C13.7761 14 14 13.7761 14 13.5V10.5C14 10.2239 13.7761 10 13.5 10H10.5C10.2239 10 10 9.77614 10 9.5V6.5C10 6.22386 10.2239 6 10.5 6H11.5C11.7761 6 12 5.77614 12 5.5V5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M12 5.5V18.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <h1 class="text-3xl font-bold text-green-400">Tasa VE</h1>
+            <h1 class="text-3xl font-bold text-theme-dynamic christmas-font">Tasa VE</h1>
             
             <div id="device-icon" class="device-indicator hidden" title="Dispositivo Detectado"></div>
         </div>
         
         <p class="text-gray-400 mb-6">Tasas Actualizadas del Banco Central de Venezuela</p>
         
-        <div class="animated-bar w-full h-1 rounded-full mb-6"></div>
+        <div class="animated-bar w-full h-1 rounded-full mb-6 bg-gradient-to-r from-green-600 via-green-400 to-green-600"></div>
 
-        <!-- Selector de Visualización -->
+        <!-- Selector de Visualización con SWIPE GESTURE -->
         <div class="flex justify-center mb-6 relative">
             <div id="display-select-trigger" class="custom-select-trigger" onclick="openCurrencySelector('display')">
                 <span id="display-select-text">Seleccionar Moneda...</span>
@@ -393,7 +486,8 @@
             <div class="card p-4 rounded-lg mb-4 w-full">
                 <p class="text-xl text-gray-400">Valor actual:</p>
                 <div class="flex items-center justify-center space-x-2">
-                    <p class="text-4xl sm:text-5xl font-bold text-green-400 mt-1 mr-2" id="currency-rate">Cargando...</p>
+                    <!-- NOTA: Se eliminó christmas-font para mantener fuente original -->
+                    <p class="text-4xl sm:text-5xl font-bold text-green-dynamic mt-1 mr-2" id="currency-rate">Cargando...</p>
                     <button id="copy-btn" class="text-gray-400 hover:text-green-400 focus:outline-none transition-colors" title="Copiar Tasa">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2A2 2 0 0114 5m-5 8h4m-4 4h4" />
@@ -407,7 +501,7 @@
             </div>
             
             <div id="usdt-notice" class="card p-3 rounded-xl text-sm text-red-400 border border-red-500 hidden">
-                <p>⚠️ **ATENCIÓN:** Tasa USDT basada en promedio P2P. Valor altamente referencial, no oficial. ¡Opera con cautela!</p>
+                <p>⚠️ **ATENCIÓN:** Tasa USDT basada en promedio P2P.</p>
             </div>
 
             <div id="custom-notice" class="card p-3 rounded-xl text-sm text-blue-400 border border-blue-500 hidden">
@@ -420,21 +514,16 @@
         </div>
         <div id="error-message" class="hidden text-red-400 text-sm mt-2"></div>
 
-        <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-3 px-4 rounded-xl gradient-button pulse-animation">
+        <button id="refresh-btn" class="w-full mt-4 text-white font-semibold py-3 px-4 rounded-xl gradient-button pulse-animation text-xl christmas-font">
             Actualizar Tasa
         </button>
 
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
-            <h2 class="text-2xl font-bold text-green-400 mb-4">Conversor de Divisas</h2>
+            <h2 class="text-2xl font-bold text-theme-dynamic mb-4 christmas-font">Conversor de Divisas</h2>
             
             <div class="flex flex-col space-y-2 mb-4 items-center justify-center relative">
                 <div class="input-wrapper">
-                    <input 
-                        type="text" 
-                        id="amount-input" 
-                        class="converter-input" 
-                        placeholder="Cantidad (ej: 100+50-10)" 
-                    >
+                    <input type="text" id="amount-input" class="converter-input" placeholder="Cantidad (ej: 100+50-10)">
                     <button class="help-icon-btn" onclick="openHelpModal()" title="Ayuda del conversor">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -462,75 +551,69 @@
             </button>
             
             <div id="conversion-result" class="mt-4 p-4 card rounded-lg hidden">
-                <div id="converted-value" class="text-3xl font-bold text-green-400 mb-2"></div>
+                <div id="converted-value" class="text-3xl font-bold text-green-dynamic mb-2"></div>
                 <p id="conversion-direction-text" class="text-sm text-gray-400 text-center"></p>
             </div>
         </div>
 
         <div class="mt-8 pt-6 border-t border-gray-700 text-left">
-            <h2 class="text-2xl font-bold text-green-400 mb-4">Historial de Conversiones</h2>
+            <h2 class="text-2xl font-bold text-theme-dynamic mb-4 christmas-font">Historial de Conversiones</h2>
             <ul id="history-list" class="space-y-2 text-gray-400"></ul>
         </div>
     </main>
 
     <div id="message-box" class="hidden">
-        <p id="msg-text">¡Tasa copiada al portapapeles!</p>
+        <p id="msg-text">¡Tasa copiada!</p>
     </div>
 
-    <!-- Modal: Selección de Moneda -->
+    <!-- Modales permanecen igual, solo ajustando clases si es necesario -->
     <div id="currency-selector-modal" class="modal">
         <div class="modal-content w-full max-w-sm">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-green-400">Seleccionar Tasa</h3>
-                <button onclick="closeModal('currency-selector-modal')" class="text-gray-400 hover:text-white">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <h3 class="text-xl font-bold text-theme-dynamic christmas-font">Seleccionar Tasa</h3>
+                <button onclick="closeModal('currency-selector-modal')" class="text-gray-400 hover:text-white">✕</button>
             </div>
             <div id="currency-options-list" class="max-h-96 overflow-y-auto"></div>
         </div>
     </div>
 
-    <!-- Modal: Tasa Personalizada -->
     <div id="custom-rate-modal" class="modal">
         <div class="modal-content w-full max-w-sm">
-            <h3 class="text-xl font-bold mb-4 text-green-400">Añadir Tasa Personalizada</h3>
+            <h3 class="text-xl font-bold mb-4 text-theme-dynamic christmas-font">Añadir Tasa</h3>
             <p class="text-sm text-gray-300 mb-2">Selecciona un Icono:</p>
             <div class="emoji-grid" id="emoji-selector">
                 <div class="emoji-option selected" data-emoji="🔧">🔧</div>
                 <div class="emoji-option" data-emoji="🏦">🏦</div>
                 <div class="emoji-option" data-emoji="💳">💳</div>
                 <div class="emoji-option" data-emoji="📦">📦</div>
-                <div class="emoji-option" data-emoji="🤝">🤝</div>
+                <div class="emoji-option" data-emoji="🎁">🎁</div>
                 <div class="emoji-option" data-emoji="🪙">🪙</div>
-                <div class="emoji-option" data-emoji="🦄">🦄</div>
+                <div class="emoji-option" data-emoji="🎄">🎄</div>
                 <div class="emoji-option" data-emoji="🚀">🚀</div>
-                <div class="emoji-option" data-emoji="💼">💼</div>
+                <div class="emoji-option" data-emoji="🎅">🎅</div>
                 <div class="emoji-option" data-emoji="🏠">🏠</div>
             </div>
-            <label class="block text-sm font-medium text-gray-300 mb-1">Nombre (Ej: Zelle, PayPal)</label>
-            <input type="text" id="custom-rate-name" class="converter-input w-full mb-3" placeholder="Nombre (Max 20 caracteres)" maxlength="20">
+            <label class="block text-sm font-medium text-gray-300 mb-1">Nombre (Max 20)</label>
+            <input type="text" id="custom-rate-name" class="converter-input w-full mb-3" placeholder="Nombre (Ej: Zelle)" maxlength="20">
             <label class="block text-sm font-medium text-gray-300 mb-1">Valor en Bolívares (Max 4 dígitos)</label>
             <input type="number" id="custom-rate-value" class="converter-input w-full mb-6" placeholder="0.00" step="any" max="9999">
             <div class="flex justify-end space-x-3">
                 <button onclick="closeModal('custom-rate-modal')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
-                <button id="save-custom-rate-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Guardar Tasa</button>
+                <button id="save-custom-rate-btn" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Guardar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Editar Etiqueta -->
     <div id="edit-tag-modal" class="modal">
         <div class="modal-content w-full max-w-sm">
-            <h3 class="text-xl font-bold mb-4">Añadir/Editar Etiqueta</h3>
-            <p class="text-sm text-gray-400 mb-3">Estás etiquetando: <span id="edit-modal-input-summary" class="font-semibold text-green-400"></span></p>
-            <textarea id="tag-input" class="modal-textarea w-full p-3 mb-2" placeholder="Etiqueta o Nota (máx. 200 caracteres)" maxlength="200" rows="4"></textarea>
-            <p class="text-xs text-right text-gray-500 mb-4"><span id="tag-char-count">0</span> / 200</p>
+            <h3 class="text-xl font-bold mb-4">Etiquetar</h3>
+            <p class="text-sm text-gray-400 mb-3"><span id="edit-modal-input-summary" class="font-semibold text-green-400"></span></p>
+            <textarea id="tag-input" class="modal-textarea w-full p-3 mb-2" placeholder="Nota..." maxlength="200" rows="4"></textarea>
+            <p class="text-xs text-right text-gray-500 mb-4"><span id="tag-char-count">0</span>/200</p>
             <div class="mb-6 pt-4 border-t border-gray-700">
-                <label for="payment-select" class="block text-sm font-medium text-gray-400 mb-2">Si has comprado y deseas poner la opción de pago que utilizaste puedes seleccionar (opcional)</label>
+                <label for="payment-select" class="block text-sm font-medium text-gray-400 mb-2">Método de Pago</label>
                 <select id="payment-select" class="modal-textarea w-full p-2 text-sm">
-                    <option value="">-- No especificado --</option>
+                    <option value="">-- Ninguno --</option>
                     <option value="PagoMovil">PagoMovil</option>
                     <option value="Transferencia">Transferencia</option>
                     <option value="Efectivo">Efectivo</option>
@@ -543,104 +626,85 @@
         </div>
     </div>
 
-    <!-- Modal: Ver Detalles -->
     <div id="view-details-modal" class="modal">
         <div class="modal-content w-full max-w-xl">
-            <h3 class="text-2xl font-bold mb-4 text-green-400">Detalle de Conversión</h3>
-            <button onclick="closeModal('view-details-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0m-0 -4v4"></path><path d="M18 6l-12 12"></path><path d="M6 6l12 12"></path></svg>
-            </button>
+            <h3 class="text-2xl font-bold mb-4 text-theme-dynamic christmas-font">Detalle</h3>
+            <button onclick="closeModal('view-details-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white">✕</button>
             <div class="mb-4 p-5 bg-gray-800 rounded-lg border-l-4 border-blue-500 text-center">
-                <p class="text-sm font-semibold uppercase text-blue-300">Etiqueta de Conversión:</p>
+                <p class="text-sm font-semibold uppercase text-blue-300">Etiqueta:</p>
                 <p id="view-modal-tag" class="text-xl font-semibold text-white break-words whitespace-pre-wrap mt-1"></p>
             </div>
-            <label class="block text-sm font-medium text-gray-400 mb-1">Detalle de la Transacción:</label>
+            <label class="block text-sm font-medium text-gray-400 mb-1">Detalles:</label>
             <textarea readOnly id="view-modal-details" rows="7" class="modal-textarea w-full p-4 text-sm"></textarea>
             <div id="view-modal-timestamp" class="text-right text-xs text-gray-500 mt-2"></div>
         </div>
     </div>
     
-    <!-- Modal: Confirmar Borrado Historial Individual -->
     <div id="delete-confirm-modal" class="modal">
         <div class="modal-content w-full max-w-xs">
-            <h3 class="text-xl font-bold mb-4 text-red-500">Confirmación Necesaria</h3>
-            <p class="text-gray-200 mb-6">¿Estás seguro de eliminar esta conversión del historial? Esta acción no se puede deshacer.</p>
+            <h3 class="text-xl font-bold mb-4 text-red-500">¿Eliminar?</h3>
+            <p class="text-gray-200 mb-6">Esta acción no se puede deshacer.</p>
             <div class="flex justify-between space-x-3">
-                <button onclick="closeModal('delete-confirm-modal')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">No, Cancelar</button>
-                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sí, Eliminar</button>
+                <button onclick="closeModal('delete-confirm-modal')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
+                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Eliminar</button>
             </div>
         </div>
     </div>
     
-    <!-- Modal: Confirmar Limpiar Historial Completo -->
     <div id="clear-history-confirm-modal" class="modal">
         <div class="modal-content w-full max-w-sm text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
             <h3 class="text-xl font-bold mb-2 text-white">¡Cuidado!</h3>
-            <p class="text-gray-300 mb-6">¿Estás seguro de realizar esta acción? El historial se borrará permanentemente y <strong>no se puede deshacer</strong>.</p>
+            <p class="text-gray-300 mb-6">¿Borrar TODO el historial? No hay vuelta atrás.</p>
             <div class="flex justify-center space-x-3">
                 <button onclick="closeModal('clear-history-confirm-modal')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
-                <button id="confirm-clear-history-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg disabled-btn transition-colors" disabled>
-                    Sí, borrar (<span id="clear-countdown">5</span>)
-                </button>
+                <button id="confirm-clear-history-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg disabled-btn transition-colors" disabled>Borrar (5)</button>
             </div>
         </div>
     </div>
     
-    <!-- Modal: Confirmar Borrado Tasa -->
     <div id="delete-rate-confirm-modal" class="modal">
         <div class="modal-content w-full max-w-xs">
             <h3 class="text-xl font-bold mb-4 text-red-500">Borrar Tasa</h3>
-            <p class="text-gray-200 mb-6">¿Estás seguro de borrar la tasa personalizada <span id="delete-rate-name-span" class="font-bold text-white"></span>?</p>
+            <p class="text-gray-200 mb-6">¿Borrar <span id="delete-rate-name-span" class="font-bold text-white"></span>?</p>
             <div class="flex justify-between space-x-3">
                 <button onclick="closeModal('delete-rate-confirm-modal')" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Cancelar</button>
-                <button id="confirm-delete-rate-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sí, Borrar</button>
+                <button id="confirm-delete-rate-btn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Borrar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Ayuda del Conversor (NUEVO) -->
     <div id="help-modal" class="modal">
         <div class="modal-content w-full max-w-md">
-            <h3 class="text-xl font-bold mb-4 text-green-400">Guía del Conversor</h3>
+            <h3 class="text-xl font-bold mb-4 text-theme-dynamic">Ayuda</h3>
             <ul class="list-disc list-inside text-gray-300 space-y-3 text-sm text-left">
-                <li><strong>Monto Simple:</strong> Escribe el número que deseas convertir (ej: <code>500</code>).</li>
-                <li><strong>Formatos Inteligentes:</strong> Soporta puntos y comas. Ej: <code>10.324,45</code> o <code>10.324.45</code> se leen correctamente como diez mil.</li>
-                <li><strong>Cálculos Rápidos:</strong> Puedes usar sumas y restas directamente (ej: <code>100+50-20</code>) y el sistema calculará el total.</li>
-                <li><strong>Historial y Etiquetas:</strong> Cada conversión se guarda en el historial de abajo. Usa el icono de etiqueta (🏷️) para añadir notas o indicar si pagaste con PagoMovil, Efectivo, etc.</li>
+                <li>Escribe <code>500</code> o usa operaciones como <code>100+20</code>.</li>
+                <li>Soporta formatos como <code>10.324,45</code> (formato VE).</li>
+                <li>Usa el historial y etiquetas para organizar tus gastos.</li>
             </ul>
             <button onclick="closeModal('help-modal')" class="mt-6 w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">Entendido</button>
         </div>
     </div>
 
-    <!-- Modal: Información App (NUEVO) -->
     <div id="app-info-modal" class="modal">
-        <div class="modal-content w-full max-w-xs text-center">
-            <h3 class="text-2xl font-bold mb-2 text-green-400">Tasa VE</h3>
+        <div class="modal-content w-full max-w-xs text-center border-2 border-green-500">
+            <h3 class="text-2xl font-bold mb-2 text-theme-dynamic christmas-font">Tasa VE</h3>
             <p class="text-gray-400 mb-6 text-sm">Tu conversor de confianza.</p>
-            
             <div class="bg-gray-800 p-4 rounded-lg mb-6 border border-gray-700">
                 <p class="text-gray-300 mb-1 font-semibold">Desarrollado por:</p>
                 <p class="text-green-400 font-bold text-lg mb-3">TasaVE.Devs</p>
                 <div class="border-t border-gray-700 my-2"></div>
-                <p class="text-gray-400 text-sm italic">Mi firma: OAMH</p>
+                <p class="text-gray-400 text-sm italic">Firma: OAMH</p>
             </div>
-            
-            <p class="text-xs text-gray-500 mb-4">Versión: 1.0.0</p>
-            
+            <p class="text-xs text-red-400 mb-4 font-bold">Update Navidad 2025</p>
             <button onclick="closeModal('app-info-modal')" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Cerrar</button>
         </div>
     </div>
     
     <script>
         const baseDefaultRates = {
-            'USD': { value: 251.88, symbol: 'Bs', conversion: 251.88, displaySymbol: '$' },
-            'EUR': { value: 293.88, symbol: 'Bs', conversion: 293.88, displaySymbol: '€' },
-            'USDT': { value: 377.65, symbol: 'Bs', conversion: 377.65, displaySymbol: '₮' }
+            'USD': { value: 257.92, symbol: 'Bs', conversion: 257.92, displaySymbol: '$' },
+            'EUR': { value: 300.50, symbol: 'Bs', conversion: 300.50, displaySymbol: '€' },
+            'USDT': { value: 381.66, symbol: 'Bs', conversion: 381.66, displaySymbol: '₮' }
         };
 
         let rates = {}; 
@@ -648,14 +712,14 @@
         let customRates = {}; 
         const MAX_CUSTOM_RATES = 2;
         let currentCurrency = 'USD';
-        
         let displayCurrency = 'USD';
         let converterCurrency = 'USD';
-        
         let conversionDirection = 'currency-to-bs';
         
         const HISTORY_KEY = 'conversionHistory';
         const CUSTOM_RATES_KEY = 'customRates'; 
+        const THEME_KEY = 'christmasThemeEnabled';
+
         let msgTimeout;
         let clearHistoryInterval; 
         let editingHistoryId = null; 
@@ -663,7 +727,13 @@
         let pendingDeleteRateName = null; 
         let selectedEmoji = '🔧'; 
         let activeSelectorContext = null; 
+        let isChristmasEnabled = true;
 
+        // Variables Swipe
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        // Referencias DOM
         const settingsBtn = document.getElementById('settings-btn');
         const settingsMenu = document.getElementById('settings-menu');
         const gearIcon = document.querySelector('.gear-icon');
@@ -671,8 +741,107 @@
         const tagInput = document.getElementById('tag-input');
         const tagCharCount = document.getElementById('tag-char-count');
         const emojiOptions = document.querySelectorAll('.emoji-option');
+        const christmasToggle = document.getElementById('christmas-toggle');
+        const particlesContainer = document.getElementById('particles-container');
+        const displayTrigger = document.getElementById('display-select-trigger');
         
-        // --- Helpers UI ---
+        // --- LOGICA MODO NAVIDAD ---
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            // Por defecto activado si no hay nada guardado
+            isChristmasEnabled = savedTheme === null ? true : (savedTheme === 'true');
+            
+            christmasToggle.checked = isChristmasEnabled;
+            applyTheme();
+        }
+
+        function applyTheme() {
+            if (isChristmasEnabled) {
+                document.body.classList.add('christmas-theme');
+                particlesContainer.style.display = 'block';
+                createParticles();
+            } else {
+                document.body.classList.remove('christmas-theme');
+                particlesContainer.style.display = 'none';
+                particlesContainer.innerHTML = ''; // Limpiar partículas
+            }
+        }
+
+        christmasToggle.addEventListener('change', () => {
+            isChristmasEnabled = christmasToggle.checked;
+            localStorage.setItem(THEME_KEY, isChristmasEnabled);
+            applyTheme();
+        });
+
+        // --- EFECTOS NAVIDEÑOS (PARTÍCULAS) ---
+        function createParticles() {
+            if (!isChristmasEnabled) return;
+            particlesContainer.innerHTML = ''; // Limpiar anteriores
+            
+            const snowflakesCount = 30; 
+            const candyCount = 6;       
+
+            for (let i = 0; i < snowflakesCount; i++) {
+                const flake = document.createElement('div');
+                flake.classList.add('snowflake');
+                flake.textContent = '❄';
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                flake.style.animationDuration = (Math.random() * 5 + 5) + 's'; 
+                flake.style.animationDelay = (Math.random() * 5) + 's';
+                flake.style.opacity = Math.random() * 0.5 + 0.3;
+                particlesContainer.appendChild(flake);
+            }
+
+            for (let i = 0; i < candyCount; i++) {
+                const candy = document.createElement('div');
+                candy.classList.add('candy-cane-particle');
+                candy.textContent = Math.random() > 0.5 ? '🍭' : '🍬';
+                candy.style.left = Math.random() * 90 + 'vw';
+                candy.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                candy.style.animationDelay = (Math.random() * 10) + 's';
+                particlesContainer.appendChild(candy);
+            }
+        }
+
+        // --- SWIPE GESTURE LOGIC ---
+        displayTrigger.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+        }, {passive: true});
+
+        displayTrigger.addEventListener('touchend', (e) => {
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            const swipeThreshold = 30; // pixels
+            const diffY = touchStartY - touchEndY;
+
+            // Obtener lista de claves disponibles
+            const allKeys = [...DEFAULT_CURRENCIES, ...Object.keys(customRates)];
+            let currentIndex = allKeys.indexOf(displayCurrency);
+            
+            if (currentIndex === -1) currentIndex = 0;
+
+            if (Math.abs(diffY) > swipeThreshold) {
+                if (diffY > 0) {
+                    // Swipe UP -> Siguiente moneda
+                    let nextIndex = currentIndex + 1;
+                    if (nextIndex >= allKeys.length) nextIndex = 0; // Loop al inicio
+                    const nextCurrency = allKeys[nextIndex];
+                    updateDisplay(nextCurrency, true);
+                } else {
+                    // Swipe DOWN -> Moneda anterior
+                    let prevIndex = currentIndex - 1;
+                    if (prevIndex < 0) prevIndex = allKeys.length - 1; // Loop al final
+                    const prevCurrency = allKeys[prevIndex];
+                    updateDisplay(prevCurrency, true);
+                }
+            }
+        }
+
+        // --- FUNCIONES CORE ---
         
         function showMessage(message, duration = 3000) {
             const msgBox = document.getElementById('message-box');
@@ -682,7 +851,6 @@
             msgBox.style.display = 'block';
             setTimeout(() => { msgBox.style.opacity = 1; }, 10);
             msgTimeout = setTimeout(() => {
-                const msgBox = document.getElementById('message-box');
                 msgBox.style.opacity = 0;
                 setTimeout(() => { msgBox.style.display = 'none'; }, 300);
             }, duration);
@@ -692,23 +860,19 @@
             const rateInfo = rates[displayCurrency];
             const rawRateText = currencyRateElement.textContent.trim().split(' ')[1]; 
             const valueToCopy = rawRateText.replace(/,/g, ''); 
-            
             let clipboardText = "";
-
             if (rateInfo && rateInfo.isCustom) {
                 clipboardText = `Tasa VE Mi Tasa Personalizada de Usuario es ${displayCurrency} es de ${rawRateText}`;
             } else {
                 clipboardText = `Tasa VE: El valor Actual ${displayCurrency} es ${rawRateText}`;
             }
-
             const tempInput = document.createElement('textarea');
             tempInput.value = clipboardText; 
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');
             document.body.removeChild(tempInput);
-            
-            showMessage("¡Información de tasa copiada!", 3000);
+            showMessage("¡Copiado! Feliz Navidad 🎄", 3000);
         }
 
         function applyFlashEffect() {
@@ -718,6 +882,7 @@
             setTimeout(() => { currencyRateElement.classList.remove('rate-flash'); }, 800);
         }
 
+        // --- Eventos Globales & UI ---
         document.addEventListener('click', (e) => {
             const target = e.target;
             const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
@@ -734,15 +899,10 @@
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = "none";
-                if (event.target.id === 'clear-history-confirm-modal') {
-                    clearInterval(clearHistoryInterval);
-                }
+                if (event.target.id === 'clear-history-confirm-modal') clearInterval(clearHistoryInterval);
             }
             if (!event.target.closest('#settings-menu') && !event.target.closest('#settings-btn')) {
-                if (settingsMenu.style.display === 'block') {
-                    settingsMenu.style.display = 'none';
-                    gearIcon.classList.remove('active');
-                }
+                if (settingsMenu.style.display === 'block') closeAllMenus();
             }
         }
 
@@ -761,9 +921,7 @@
 
         window.closeModal = function(id) {
             document.getElementById(id).style.display = 'none';
-            if (id === 'clear-history-confirm-modal') {
-                clearInterval(clearHistoryInterval);
-            }
+            if (id === 'clear-history-confirm-modal') clearInterval(clearHistoryInterval);
         }
 
         window.openHelpModal = function() {
@@ -791,7 +949,6 @@
                 const rate = rates[key];
                 let labelName = '';
                 let labelEmoji = '';
-                
                 if (key === 'USD') { labelName = 'Dólar (USD)'; labelEmoji = '🇺🇸'; }
                 else if (key === 'EUR') { labelName = 'Euro (EUR)'; labelEmoji = '🇪🇺'; }
                 else if (key === 'USDT') { labelName = 'USDT (Tether)'; labelEmoji = '₮'; }
@@ -799,15 +956,10 @@
 
                 const item = document.createElement('div');
                 item.className = `currency-option-card ${currentSelected === key ? 'active' : ''}`;
-                item.innerHTML = `
-                    <span class="currency-icon">${labelEmoji}</span>
-                    <span class="font-bold text-gray-200 text-lg">${labelName}</span>
-                `;
-                
+                item.innerHTML = `<span class="currency-icon">${labelEmoji}</span><span class="font-bold text-gray-200 text-lg">${labelName}</span>`;
                 item.onclick = () => selectCurrencyFromModal(key);
                 listContainer.appendChild(item);
             });
-
             document.getElementById('currency-selector-modal').style.display = 'flex';
         }
 
@@ -830,10 +982,8 @@
                 if (displayCurrency === 'USD') emoji = '🇺🇸'; 
                 if (displayCurrency === 'EUR') emoji = '🇪🇺';
                 if (displayCurrency === 'USDT') emoji = '₮';
-                
                 document.getElementById('display-select-text').innerHTML = `<span class="mr-2">${emoji}</span> ${label}`;
             }
-
             const converterRate = rates[converterCurrency];
             if (converterRate) {
                 let label = converterCurrency;
@@ -841,7 +991,6 @@
                 if (converterCurrency === 'USD') emoji = '🇺🇸'; 
                 if (converterCurrency === 'EUR') emoji = '🇪🇺';
                 if (converterCurrency === 'USDT') emoji = '₮';
-
                 document.getElementById('converter-select-text').innerHTML = `<span class="mr-2">${emoji}</span> ${label}`;
             }
         }
@@ -851,28 +1000,25 @@
             const modal = document.getElementById('clear-history-confirm-modal');
             const confirmBtn = document.getElementById('confirm-clear-history-btn');
             const countdownSpan = document.getElementById('clear-countdown');
-            
             let timeLeft = 5;
             confirmBtn.disabled = true;
             confirmBtn.classList.add('disabled-btn');
             confirmBtn.classList.remove('hover:bg-red-700');
             countdownSpan.textContent = timeLeft;
-            confirmBtn.innerHTML = `Sí, borrar (${timeLeft})`;
-            
+            confirmBtn.innerHTML = `Borrar (${timeLeft})`;
             modal.style.display = 'flex';
-            
             clearInterval(clearHistoryInterval);
             clearHistoryInterval = setInterval(() => {
                 timeLeft--;
                 if (timeLeft > 0) {
                     countdownSpan.textContent = timeLeft;
-                    confirmBtn.innerHTML = `Sí, borrar (${timeLeft})`;
+                    confirmBtn.innerHTML = `Borrar (${timeLeft})`;
                 } else {
                     clearInterval(clearHistoryInterval);
                     confirmBtn.disabled = false;
                     confirmBtn.classList.remove('disabled-btn');
                     confirmBtn.classList.add('hover:bg-red-700');
-                    confirmBtn.innerHTML = `Sí, borrar definitivamente`;
+                    confirmBtn.innerHTML = `¡Borrar Todo!`;
                 }
             }, 1000);
         });
@@ -881,24 +1027,20 @@
             localStorage.removeItem(HISTORY_KEY);
             loadHistory();
             closeModal('clear-history-confirm-modal');
-            showMessage("¡Historial borrado permanentemente!", 3000);
+            showMessage("¡Historial borrado!", 3000);
         });
-
 
         window.openCustomRateModal = function() {
             if (Object.keys(customRates).length >= MAX_CUSTOM_RATES) {
-                showMessage("Has alcanzado el límite máximo de 2 tasas personalizadas.", 3000);
+                showMessage("Máximo 2 tasas permitidas.", 3000);
                 return;
             }
             closeAllMenus();
-            
             document.getElementById('custom-rate-name').value = '';
             document.getElementById('custom-rate-value').value = '';
-            
             emojiOptions.forEach(opt => opt.classList.remove('selected'));
             document.querySelector('.emoji-option[data-emoji="🔧"]').classList.add('selected');
             selectedEmoji = '🔧';
-
             document.getElementById('custom-rate-modal').style.display = 'flex';
         }
 
@@ -907,7 +1049,6 @@
             const listDiv = document.getElementById('custom-rates-list');
             const addBtn = document.getElementById('add-custom-rate-btn');
             const maxMsg = document.getElementById('max-rates-msg');
-            
             const customKeys = Object.keys(customRates);
             const count = customKeys.length;
 
@@ -922,23 +1063,11 @@
             if (count > 0) {
                 listContainer.classList.remove('hidden');
                 listDiv.innerHTML = '';
-                
                 customKeys.forEach(key => {
                     const item = document.createElement('div');
                     item.className = 'custom-rate-item';
                     const rate = customRates[key];
-                    
-                    item.innerHTML = `
-                        <div class="flex items-center text-sm">
-                            <span class="mr-2 text-xl">${rate.displaySymbol}</span>
-                            <span class="font-semibold text-gray-300 truncate w-32">${key}</span>
-                        </div>
-                        <button onclick="confirmDeleteRate('${key}')" class="text-red-400 hover:text-red-300 p-1 hover:bg-gray-700 rounded transition-colors" title="Borrar Tasa">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                    `;
+                    item.innerHTML = `<div class="flex items-center text-sm"><span class="mr-2 text-xl">${rate.displaySymbol}</span><span class="font-semibold text-gray-300 truncate w-32">${key}</span></div><button onclick="confirmDeleteRate('${key}')" class="text-red-400 hover:text-red-300 p-1 hover:bg-gray-700 rounded transition-colors" title="Borrar">🗑️</button>`;
                     listDiv.appendChild(item);
                 });
             } else {
@@ -954,36 +1083,20 @@
         }
 
         window.saveCustomRate = function() {
-            if (Object.keys(customRates).length >= MAX_CUSTOM_RATES) {
-                showMessage("Límite de tasas alcanzado.", 3000);
-                return;
-            }
-
-            const nameInput = document.getElementById('custom-rate-name');
-            const valueInput = document.getElementById('custom-rate-value');
-            
-            const name = nameInput.value.trim().toUpperCase();
-            const value = parseFloat(valueInput.value);
+            if (Object.keys(customRates).length >= MAX_CUSTOM_RATES) { showMessage("Límite alcanzado.", 3000); return; }
+            const name = document.getElementById('custom-rate-name').value.trim().toUpperCase();
+            const value = parseFloat(document.getElementById('custom-rate-value').value);
 
             if (!name) { showMessage("Ingresa un nombre.", 3000); return; }
             if (customRates[name] || DEFAULT_CURRENCIES.includes(name)) { showMessage("Nombre duplicado.", 3000); return; }
             if (isNaN(value) || value <= 0) { showMessage("Valor inválido.", 3000); return; }
             if (value > 9999) { showMessage("Máx 4 dígitos.", 3000); return; }
 
-            customRates[name] = {
-                value: value,
-                symbol: 'Bs',
-                conversion: value,
-                displaySymbol: selectedEmoji, 
-                isCustom: true 
-            };
-
+            customRates[name] = { value: value, symbol: 'Bs', conversion: value, displaySymbol: selectedEmoji, isCustom: true };
             localStorage.setItem(CUSTOM_RATES_KEY, JSON.stringify(customRates));
             mergeRatesAndUpdateUI();
-            
             closeModal('custom-rate-modal');
             showMessage(`Tasa "${name}" agregada.`, 3000);
-            
             displayCurrency = name;
             updateDisplay(name, true);
         }
@@ -992,17 +1105,16 @@
             if (pendingDeleteRateName && customRates[pendingDeleteRateName]) {
                 delete customRates[pendingDeleteRateName];
                 localStorage.setItem(CUSTOM_RATES_KEY, JSON.stringify(customRates));
-                
                 if (displayCurrency === pendingDeleteRateName) displayCurrency = 'USD';
                 if (converterCurrency === pendingDeleteRateName) converterCurrency = 'USD';
-
-                mergeRatesAndUpdateUI(); 
-                showMessage(`Tasa "${pendingDeleteRateName}" eliminada.`, 3000);
+                mergeRatesAndUpdateUI();
+                showMessage(`Tasa eliminada.`, 3000);
             }
             pendingDeleteRateName = null;
             closeModal('delete-rate-confirm-modal');
         });
 
+        // --- Helper View/Edit History ---
         window.openEditModal = function(id) {
             closeAllMenus();
             editingHistoryId = id;
@@ -1022,41 +1134,16 @@
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const item = history.find(i => i.id === id);
             if (!item) return;
-            
             let rateUsedText = '';
             if (item.rateUsed) {
                 const storedRate = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                rateUsedText = `
-                    <p class="text-sm mt-3 text-gray-400">
-                        <span class="font-bold text-yellow-300">Tasa USADA:</span> Bs ${storedRate}
-                    </p>
-                `;
+                rateUsedText = `<p class="text-sm mt-3 text-gray-400"><span class="font-bold text-theme-dynamic">Tasa:</span> Bs ${storedRate}</p>`;
             }
-
-            const rateUsedFormatted = parseFloat(item.rateUsed).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            let rateTypeLabel = 'Tasa de Cambio';
-            
-            if (item.rateCurrencySymbol === '$') rateTypeLabel = 'Tasa USD';
-            else if (item.rateCurrencySymbol === '€') rateTypeLabel = 'Tasa EUR';
-            else if (item.rateCurrencySymbol === '₮') rateTypeLabel = 'Tasa USDT';
-            else rateTypeLabel = `Tasa ${item.fromCurrency === 'Bolívares' ? item.toCurrency : item.fromCurrency}`;
-            
-            let detailsText = `Monto de Conversión: ${item.input} ${item.fromSymbol}\n` + 
-                              `Total de Conversión: ${item.result} ${item.toSymbol}`;
-
-            if (item.paymentMethod && item.paymentMethod !== '') {
-                detailsText += `\nMétodo de Pago: ${item.paymentMethod}`;
-            }
-
-            detailsText += `\n\nValor Actual de la Tasa: ${rateTypeLabel} = Bs ${rateUsedFormatted}`;
-
+            let detailsText = `Monto: ${item.input} ${item.fromSymbol}\nTotal: ${item.result} ${item.toSymbol}`;
+            if (item.paymentMethod) detailsText += `\nPago: ${item.paymentMethod}`;
             document.getElementById('view-modal-tag').textContent = item.tag || 'Sin Etiqueta';
             document.getElementById('view-modal-details').value = detailsText;
-            document.getElementById('view-modal-timestamp').innerHTML = `
-                <p class="text-xs">ID de Transacción: ${item.id.substring(0, 8)}...</p>
-                <p class="mt-1 text-xs">Fecha: ${item.timestamp}</p>
-                ${rateUsedText}
-            `;
+            document.getElementById('view-modal-timestamp').innerHTML = `<p class="text-xs">ID: ${item.id.substring(0, 8)}...</p><p class="mt-1 text-xs">${item.timestamp}</p>${rateUsedText}`;
             document.getElementById('view-details-modal').style.display = 'flex';
         }
 
@@ -1066,16 +1153,14 @@
             const newPaymentMethod = document.getElementById('payment-select').value; 
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             history = history.map(item => {
-                if (item.id === editingHistoryId) {
-                    return { ...item, tag: newTag, paymentMethod: newPaymentMethod };
-                }
+                if (item.id === editingHistoryId) { return { ...item, tag: newTag, paymentMethod: newPaymentMethod }; }
                 return item;
             });
             localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
             editingHistoryId = null;
             closeModal('edit-tag-modal');
             loadHistory();
-            showMessage(`Etiqueta guardada.`, 3000);
+            showMessage(`Guardado.`, 3000);
         }
         
         function deleteHistoryItem(id) {
@@ -1092,39 +1177,24 @@
             pendingDeleteId = null;
             closeModal('delete-confirm-modal');
             loadHistory();
-            showMessage("Conversión eliminada.", 3000);
+            showMessage("Eliminado.", 3000);
         }
 
         function evaluateExpression(expression) {
-            // Eliminar espacios
             const cleanExp = expression.replace(/\s/g, '');
-            
-            // Separar números y operadores (+, -)
             const parts = cleanExp.split(/([+-])/);
-            
             let total = 0;
             let currentOp = '+';
-            
             for (let part of parts) {
                 if (part === '+' || part === '-') {
                     currentOp = part;
                 } else if (part.length > 0) {
                     let numStr = part;
-                    
-                    // Lógica inteligente de formatos numéricos
-                    // Caso 1: Tiene coma (10.324,45) -> Es formato VE/EU
                     if (numStr.includes(',')) {
-                        numStr = numStr.replace(/\./g, ''); // Quitar puntos de miles
-                        numStr = numStr.replace(',', '.');  // Cambiar coma decimal a punto
-                    } 
-                    // Caso 2: Tiene múltiples puntos (10.324.45) -> Usuario usa punto para todo
-                    // Asumimos que el último punto es el decimal y los anteriores son miles
-                    else if ((numStr.match(/\./g) || []).length > 1) {
-                        // Regex: Reemplaza puntos que estén seguidos por otro punto más adelante
+                        numStr = numStr.replace(/\./g, '').replace(',', '.');
+                    } else if ((numStr.match(/\./g) || []).length > 1) {
                         numStr = numStr.replace(/\.(?=.*\.)/g, '');
                     }
-                    // Caso 3: Un solo punto (10.50) -> Estándar JS, se deja igual
-                    
                     const val = parseFloat(numStr);
                     if (!isNaN(val)) {
                         if (currentOp === '+') total += val;
@@ -1139,24 +1209,16 @@
             const amountInput = document.getElementById('amount-input');
             const conversionResultDiv = document.getElementById('conversion-result');
             const convertedValueDiv = document.getElementById('converted-value');
-            
             const rawInput = amountInput.value.trim();
             const evaluatedAmount = evaluateExpression(rawInput);
-            
-            if (evaluatedAmount === null || evaluatedAmount < 0) { // Permitir 0, pero no negativos por lógica de divisa
-                showMessage("Ingrese una cantidad válida.", 3000);
+            if (evaluatedAmount === null || evaluatedAmount < 0) {
+                showMessage("Cantidad inválida.", 3000);
                 conversionResultDiv.classList.add('hidden');
                 return;
             }
-            
             const amount = evaluatedAmount; 
             const rateInfo = rates[converterCurrency];
-
-            if (!rateInfo) {
-                showMessage("Tasa no cargada.", 3000);
-                conversionResultDiv.classList.add('hidden');
-                return;
-            }
+            if (!rateInfo) { showMessage("Error tasa.", 3000); return; }
             
             let convertedValue;
             let fromCurrency, toCurrency, fromSymbol, toSymbol;
@@ -1175,39 +1237,19 @@
                 toSymbol = 'Bs';
             }
             
-            const formattedConvertedValue = convertedValue.toLocaleString('es-VE', { 
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2 
-            });
-            
+            const formattedConvertedValue = convertedValue.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             convertedValueDiv.textContent = `${toSymbol} ${formattedConvertedValue}`;
             document.getElementById('conversion-direction-text').textContent = `${fromCurrency} ➔ ${toCurrency}`;
-
             saveConversionToHistory(rawInput, fromCurrency, toCurrency, formattedConvertedValue, fromSymbol, toSymbol, convertedValue.toFixed(2), rateInfo.value, rateInfo.displaySymbol);
             conversionResultDiv.classList.remove('hidden');
         }
         
-        function saveConversionToHistory(rawInput, fromCurrency, toCurrency, result, fromSymbol, toSymbol, numericResult, rateUsed, rateCurrencySymbol) {
+        function saveConversionToHistory(rawInput, from, to, res, fSym, tSym, numRes, rate, rateSym) {
             let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const timestamp = new Date().toLocaleString('es-VE');
-
-            const newItem = { 
-                id: crypto.randomUUID(), 
-                input: rawInput, 
-                result: result, 
-                numericResult: numericResult,
-                fromCurrency: fromCurrency, 
-                toCurrency: toCurrency, 
-                timestamp: timestamp, 
-                fromSymbol: fromSymbol, 
-                toSymbol: toSymbol,
-                rateUsed: rateUsed, 
-                rateCurrencySymbol: rateCurrencySymbol, 
-                tag: "",
-                paymentMethod: "" 
-            };
+            const newItem = { id: crypto.randomUUID(), input: rawInput, result: res, numericResult: numRes, fromCurrency: from, toCurrency: to, timestamp: timestamp, fromSymbol: fSym, toSymbol: tSym, rateUsed: rate, rateCurrencySymbol: rateSym, tag: "", paymentMethod: "" };
             history.unshift(newItem);
-            if (history.length > 25) { history.pop(); }
+            if (history.length > 25) history.pop();
             localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
             loadHistory();
         }
@@ -1216,86 +1258,52 @@
             const history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
             const historyList = document.getElementById('history-list');
             historyList.innerHTML = '';
-
-            if (history.length === 0) {
-                historyList.innerHTML = '<p class="text-center text-gray-500">Aún no hay conversiones en tu historial.</p>';
-                return;
-            } 
+            if (history.length === 0) { historyList.innerHTML = '<p class="text-center text-gray-500">Historial vacío.</p>'; return; } 
             
             history.forEach((item) => {
                 const listItem = document.createElement('li');
-                listItem.classList.add('card', 'p-3', 'rounded-lg', 'history-item', 'border', 'border-gray-700', 'flex', 'flex-col', 'sm:flex-row', 'items-start', 'sm:items-center', 'space-y-2', 'sm:space-y-0');
-                
-                const tagDisplay = item.tag 
-                    ? `<span class="bg-blue-800 text-blue-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.tag.split('\n')[0].substring(0, 40)}...</span>` 
-                    : '';
-                const paymentDisplay = item.paymentMethod 
-                    ? `<span class="bg-purple-800 text-purple-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.paymentMethod}</span>`
-                    : '';
+                listItem.classList.add('card', 'p-3', 'rounded-lg', 'history-item', 'border', 'flex', 'flex-col', 'sm:flex-row', 'items-start', 'sm:items-center', 'space-y-2', 'sm:space-y-0');
+                const tagDisplay = item.tag ? `<span class="bg-blue-900 text-blue-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.tag.substring(0, 40)}...</span>` : '';
+                const paymentDisplay = item.paymentMethod ? `<span class="bg-purple-900 text-purple-100 text-xs font-semibold px-2 py-0.5 rounded-full truncate max-w-xs">${item.paymentMethod}</span>` : '';
 
                 listItem.innerHTML = `
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center space-x-2 mb-1">
-                            ${tagDisplay} ${paymentDisplay}
-                            <p class="text-xs text-gray-500">${item.timestamp}</p>
-                        </div>
-                        <p class="text-sm">
-                            <span class="font-bold">${item.input} ${item.fromSymbol}</span> a 
-                            <span class="text-green-400 font-bold">${item.result} ${item.toSymbol}</span>
-                        </p>
+                        <div class="flex items-center space-x-2 mb-1">${tagDisplay} ${paymentDisplay}<p class="text-xs text-gray-500">${item.timestamp}</p></div>
+                        <p class="text-sm"><span class="font-bold">${item.input} ${item.fromSymbol}</span> a <span class="text-green-dynamic font-bold">${item.result} ${item.toSymbol}</span></p>
                     </div>
                     <div class="flex space-x-2 flex-shrink-0 mt-2 sm:mt-0">
-                        ${item.tag || item.paymentMethod ? `
-                            <button onclick="openViewModal('${item.id}')" title="Ver detalle" class="view-details-btn hover:text-green-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0m-0 -4v4"></path><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0"></path><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6"></path></svg>
-                            </button>
-                        ` : ''}
-                        <button onclick="openEditModal('${item.id}')" title="Etiquetar" class="edit-tag-btn hover:text-blue-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"></path><path d="M13.5 6.5l4 4"></path></svg>
-                        </button>
-                        <button onclick="deleteHistoryItem('${item.id}')" title="Eliminar" class="delete-history-item hover:text-red-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0m-0 -4v4"></path><path d="M4 7l16 0"></path><path d="M10 11l0 6"></path><path d="M14 11l0 6"></path><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12"></path><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg>
-                        </button>
-                    </div>
-                `;
+                        <button onclick="openViewModal('${item.id}')" title="Ver" class="view-details-btn hover:text-green-400">👁️</button>
+                        <button onclick="openEditModal('${item.id}')" title="Etiquetar" class="edit-tag-btn hover:text-blue-400">🏷️</button>
+                        <button onclick="deleteHistoryItem('${item.id}')" title="Eliminar" class="delete-history-item hover:text-red-500">🗑️</button>
+                    </div>`;
                 historyList.appendChild(listItem);
             });
         }
         
         function mergeRatesAndUpdateUI(defaultData = null) {
             let currentBaseRates = defaultData ? defaultData.rates : baseDefaultRates;
-            // CRITICAL FIX: Always re-merge from base + custom to ensure deletions are reflected
             rates = { ...currentBaseRates, ...customRates };
-            
             if (defaultData) {
-                const formattedDate = new Intl.DateTimeFormat('es-VE', {
-                    day: 'numeric', month: 'long', year: 'numeric'
-                }).format(new Date(defaultData.timestamp));
+                const formattedDate = new Intl.DateTimeFormat('es-VE', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(defaultData.timestamp));
                 document.getElementById('last-updated').textContent = formattedDate;
             }
-
             updateSelectTriggers();
             updateSettingsMenu();
             updateDisplay(displayCurrency, !!defaultData);
-            
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('rate-display').classList.remove('hidden');
             updateConversionInputPlaceholder();
         }
 
-        function updateUIWithRates(data, isUpdate) {
-            mergeRatesAndUpdateUI(data);
-        }
+        function updateUIWithRates(data, isUpdate) { mergeRatesAndUpdateUI(data); }
         
         function updateDisplay(currency, isUpdate = false) {
             const rateInfo = rates[currency];
             const usdtNotice = document.getElementById('usdt-notice');
             const customNotice = document.getElementById('custom-notice'); 
             const sourceTextElement = document.getElementById('source-text');
-            
             displayCurrency = currency;
-            
-            converterCurrency = currency;
+            converterCurrency = currency; 
             updateConverterUI();
             
             usdtNotice.classList.add('hidden');
@@ -1312,27 +1320,19 @@
             }
 
             if (rateInfo) {
-                const formattedRate = rateInfo.value.toLocaleString('en-US', { 
-                    minimumFractionDigits: 2, 
-                    maximumFractionDigits: 2 
-                });
+                const formattedRate = rateInfo.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 currencyRateElement.textContent = `Bs ${formattedRate}`;
                 if (isUpdate) applyFlashEffect();
             }
             updateSelectTriggers();
         }
 
-        function updateConverterUI() {
-            updateConversionInputPlaceholder();
-            updateSelectTriggers();
-        }
+        function updateConverterUI() { updateConversionInputPlaceholder(); updateSelectTriggers(); }
 
         function updateConversionInputPlaceholder() {
             const amountInput = document.getElementById('amount-input');
             const rateInfo = rates[converterCurrency];
-
             if (!rateInfo) return;
-
             if (conversionDirection === 'bs-to-currency') {
                 amountInput.placeholder = 'Cantidad en Bolívares (Bs)';
             } else {
@@ -1343,31 +1343,15 @@
         function detectDevice() {
             const deviceIconContainer = document.getElementById('device-icon');
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
-            let iconHtml = '';
-            if (isMobile) {
-                iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>Móvil`;
-            } else {
-                iconHtml = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>PC`;
-            }
+            let iconHtml = isMobile ? '📱 Móvil' : '💻 PC';
             deviceIconContainer.innerHTML = iconHtml;
             deviceIconContainer.classList.remove('hidden');
         }
         
         function initRates(isManualUpdate = false) {
              const storedCustomRates = localStorage.getItem(CUSTOM_RATES_KEY);
-             if (storedCustomRates) {
-                 customRates = JSON.parse(storedCustomRates);
-             }
-
-             const data = {
-                 rates: {
-                     'USD': { value: 257.92, symbol: 'Bs', conversion: 257.92, displaySymbol: '$' }, 
-                     'EUR': { value: 300.50, symbol: 'Bs', conversion: 300.50, displaySymbol: '€' },
-                     'USDT': { value: 394.74, symbol: 'Bs', conversion: 394.74, displaySymbol: '₮' },
-                 },
-                 timestamp: Date.now() 
-             };
-             
+             if (storedCustomRates) customRates = JSON.parse(storedCustomRates);
+             const data = { rates: baseDefaultRates, timestamp: Date.now() };
              if (!isManualUpdate && DEFAULT_CURRENCIES.includes(currentCurrency)) {
                  document.getElementById('loading').classList.remove('hidden');
                  document.getElementById('rate-display').classList.add('hidden');
@@ -1395,12 +1379,7 @@
         document.getElementById('swap-conversion-btn').addEventListener('click', () => {
             const btn = document.getElementById('swap-conversion-btn');
             btn.classList.toggle('rotated');
-
-            if (conversionDirection === 'currency-to-bs') {
-                conversionDirection = 'bs-to-currency';
-            } else {
-                conversionDirection = 'currency-to-bs';
-            }
+            conversionDirection = (conversionDirection === 'currency-to-bs') ? 'bs-to-currency' : 'currency-to-bs';
             updateConversionInputPlaceholder();
             document.getElementById('conversion-result').classList.add('hidden');
         });
@@ -1408,13 +1387,7 @@
         settingsBtn.addEventListener('click', (event) => {
             event.stopPropagation();
             const isMenuOpen = settingsMenu.style.display === 'block';
-            if (isMenuOpen) {
-                closeAllMenus();
-            } else {
-                closeAllMenus(); 
-                settingsMenu.style.display = 'block';
-                gearIcon.classList.add('active');
-            }
+            if (isMenuOpen) { closeAllMenus(); } else { closeAllMenus(); settingsMenu.style.display = 'block'; gearIcon.classList.add('active'); }
         });
 
         document.getElementById('save-tag-btn').addEventListener('click', saveTag);
@@ -1425,6 +1398,7 @@
 
         window.onload = () => {
             detectDevice();
+            initTheme(); // Iniciar tema (Navidad o Default)
             initRates(false); 
             loadHistory();
             updateConversionInputPlaceholder();
@@ -1433,5 +1407,3 @@
     </script>
 </body>
 </html>
-
-
